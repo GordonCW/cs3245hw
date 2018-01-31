@@ -9,7 +9,7 @@ def build_LM(in_file):
     build language models for each label
     each line in in_file contains a label and a string separated by a space
     """
-    print 'building language models...'
+    print('building language models...')
     # This is an empty method
     # Pls implement your code in below
     
@@ -19,17 +19,17 @@ def test_LM(in_file, out_file, LM):
     each line of in_file contains a string
     you should print the most probable label for each string into out_file
     """
-    print "testing language models..."
+    print("testing language models...")
     # This is an empty method
     # Pls implement your code in below
 
 def usage():
-    print "usage: " + sys.argv[0] + " -b input-file-for-building-LM -t input-file-for-testing-LM -o output-file"
+    print("usage: " + sys.argv[0] + " -b input-file-for-building-LM -t input-file-for-testing-LM -o output-file")
 
 input_file_b = input_file_t = output_file = None
 try:
     opts, args = getopt.getopt(sys.argv[1:], 'b:t:o:')
-except getopt.GetoptError, err:
+except getopt.GetoptError as err:
     usage()
     sys.exit(2)
 for o, a in opts:
