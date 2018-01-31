@@ -3,6 +3,9 @@ import re
 import nltk
 import sys
 import getopt
+import string
+
+translator = str.maketrans('', '', string.punctuation+'°'+'1234567890')
 
 def build_LM(in_file):
     """
@@ -12,6 +15,12 @@ def build_LM(in_file):
     print('building language models...')
     # This is an empty method
     # Pls implement your code in below
+    with open(in_file, mode="r", encoding="utf-8") as f:
+        textList = f.readlines()
+        for i in range(len(textList)):
+            textList[i] = textList[i].translate(translator).replace('\n', '').lower()
+        print(textList)
+
     
 def test_LM(in_file, out_file, LM):
     """
