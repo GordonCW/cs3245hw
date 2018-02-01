@@ -2,8 +2,7 @@ This is the README file for A0179836J's submission
 
 == Python Version ==
 
-I'm (We're) using Python Version <3.6.2> for
-this assignment.
+I'm (We're) using Python Version <3.6.2> for this assignment.
 
 == General Notes about this assignment ==
 
@@ -26,12 +25,11 @@ Therefore, for the test part, for each sentence, we find all "4-gram" and find t
 
 To avoid the number being too small and underflow, I used log probability. Since log is an strictly increasing function, the ordering of probability is preserved and direct comparison of log probability is ok.
 
+For classifying 'other' language, I observed that for sentence being 'other' language, the probability of the "4-gram" not appearing in our language model is high (about 70%). In other words, there are about 70% of "4-gram" in that sentence not being in our model. So, I make a threshold that if the test sentence has more than half of the "4-gram" are not in our model, I will classify it as 'other'.
 
 == Files included with this submission ==
 
-List the files in your submission here and provide a short 1 line
-description of each file.  Make sure your submission's files are named
-and formatted correctly.
+List the files in your submission here and provide a short 1 line description of each file.  Make sure your submission's files are named and formatted correctly.
 
 build_test_LM.py	the code for generating language model and make the prediction
 eval.py			evaluate the accuracy of the prediction by the language model
