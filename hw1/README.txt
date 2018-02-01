@@ -19,13 +19,13 @@ To compute the probability, I also count the total number of "4-gram" in each la
 For each language,
 P(<a,b,c,d>) = (Count(<a,b,c,d>) + 1)/(total no. of "4-gram" in that language + total no. of distinct "4-gram" among all language)
 
-After building the language model, any arbitrary "4-gram" <a,b,c,d> either appears in our language model or not. If it appears, we can retrieve the probability of that "4-gram" appearing in that language.
+After building the language model, any arbitrary 4 consecutive characters <a,b,c,d> either appears in our language model or not. If it appears, we can retrieve the probability of that "4-gram" appearing in that language.
 
-Therefore, for the test part, for each sentence, we find all "4-gram" and find the probability of those "4-gram" (if any in our model). Multiply those in the same language to get a estimate probability of that sentence appearing in each language. Output the language with the higher number for that particular test sentence. The output will be my prediction.
+Therefore, for the test part, for each sentence, we find all "4-gram" and find the probability of those "4-gram" (if any in our model). Multiply those in the same language to get a estimate probability of that sentence appearing in that language. Output the language with the higher probability for that particular test sentence. The output will be my prediction for the language.
 
-To avoid the number being too small and underflow, I used log probability. Since log is an strictly increasing function, the ordering of probability is preserved and direct comparison of log probability is ok.
+To avoid the number being too small and underflow, I used log probability. Since log is an strictly increasing function, the ordering of probability is preserved and direct comparisons of log probability are ok.
 
-For classifying 'other' language, I observed that for sentence being 'other' language, the probability of the "4-gram" not appearing in our language model is high (about 70%). In other words, there are about 70% of "4-gram" in that sentence not being in our model. So, I make a threshold that if the test sentence has more than half of the "4-gram" are not in our model, I will classify it as 'other'.
+For classifying 'other' language, I observed that for sentences being 'other' language, the probability of the "4-gram" not appearing in our language model is high (about 70%). In other words, there are about 70% of "4-gram" in that sentence not being in our model. So, I made a threshold that if the test sentence has more than half of the "4-gram" are not in our model, I will classify it as 'other'.
 
 == Files included with this submission ==
 
