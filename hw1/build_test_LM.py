@@ -4,6 +4,8 @@ import nltk
 import sys
 import getopt
 
+from math import log
+
 import string
 import pprint
 pp = pprint.PrettyPrinter(indent=4)
@@ -12,10 +14,7 @@ pp = pprint.PrettyPrinter(indent=4)
 
 def preprocess_line(line):
     # removing newline character and convert all character to lower case
-    line = line.replace('\n', '').lower()
-    
-    # split the label and the text
-    return line.split(maxsplit=1)
+    return line.replace('\n', '').lower()
 
 def convert_line_to_4gramList(line):
     if len(line) >= 4:
@@ -30,6 +29,35 @@ def convert_counts_to_probability(number, lm):
             count = lm[gram][lang]
             lm[gram][lang] = count/(number[lang] + total_words)
     return lm
+
+def estimate_sentence(grams, LM):
+    
+    # for 'other' it is the number of 4-grams that are not in our model
+    log_prob = {'other':0, "malaysian":0, "indonesian":0, "tamil":0}
+    
+    for gram in grams:
+        if gram not in LM:
+            log_prob['other'] += 1
+        else:
+            for lang in LM[gram]: # for each language we compute accordingly
+                log_prob[lang] += log(LM[gram][lang])
+    
+    max_list = ['', 0]
+    for key in log_prob:
+        
+        if key!='other':
+            
+            # first element
+            if max_list[1] == 0:
+                max_list[0] = key
+                max_list[1] = log_prob[key]
+            elif log_prob[key] > max_list[1]:
+                # find max prob among the three language
+                max_list[0] = key
+                max_list[1] = log_prob[key]
+    
+    return max_list[0]
+    
 
 """
  return my language model
@@ -60,7 +88,7 @@ def build_LM(in_file):
         
         for line in textList:
             
-            [label, text] = preprocess_line( line )
+            [label, text] = preprocess_line( line ).split(maxsplit=1)
 #            pp.pprint([label, text])
             
             # count the number of 4-grams for each line in training text
@@ -104,6 +132,27 @@ def test_LM(in_file, out_file, LM):
     print("testing language models...")
     # This is an empty method
     # Pls implement your code in below
+    
+    results = []
+    text = []
+    # read text input and compute estimate
+    with open(in_file, mode="r", encoding="utf-8") as f:
+        textList = f.readlines()
+        
+    for line in textList:
+        text.append( preprocess_line(line) )
+        grams = convert_line_to_4gramList( text[-1] )
+        resulting_lang = estimate_sentence(grams, LM)
+        results.append(resulting_lang + ' ' + text[-1])
+        print(resulting_lang)
+        
+    # write the prediction
+    with open(out_file, mode="w", encoding="utf-8") as f:
+        for result in results:
+            f.write(result + '\n')
+    
+    
+    print(results)
 
 def usage():
     print("usage: " + sys.argv[0] +
