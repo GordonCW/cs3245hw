@@ -6,12 +6,6 @@ import getopt
 
 from math import log
 
-import string
-import pprint
-pp = pprint.PrettyPrinter(indent=4)
-
-#translator = str.maketrans('', '', string.punctuation+'°'+'1234567890')
-
 def preprocess_line(line):
     # removing newline character and convert all character to lower case
     return line.replace('\n', '').lower()
@@ -56,19 +50,23 @@ def estimate_sentence(grams, LM):
                 max_list[0] = key
                 max_list[1] = log_prob[key]
     
-    return max_list[0]
-    
+    # if there are more than half of the grams in the sentence that have not
+    # seen in our model, then we will classify it to be 'other' language
+    if log_prob['other']/len(grams) > 0.5:
+        return 'other'
+    else:
+        return max_list[0] + ' ' + str(log_prob['other']/len(grams))
 
-"""
- return my language model
- each key is defined to be a 4-grams in our training text
- each value is defined to be a dictionary with keys being each language
- and values being the frequency of the 4-grams appearing in that language in
- our training text"""
 def build_LM(in_file):
     """
     build language models for each label
     each line in in_file contains a label and a string separated by a space
+    
+    return my language model
+    each key is defined to be a 4-grams in our training text
+    each value is defined to be a dictionary with keys being each language
+    and values being the frequency of the 4-grams appearing in that language in
+    our training text
     """
     print('building language models...')
     # This is an empty method
@@ -82,14 +80,9 @@ def build_LM(in_file):
     with open(in_file, mode="r", encoding="utf-8") as f:
         textList = f.readlines()
         
-        # striping out the numbers and punctuation
-#        for i in range(len(textList)):
-#            textList[i] = textList[i].translate(translator).replace('\n', '').lower()
-        
         for line in textList:
             
             [label, text] = preprocess_line( line ).split(maxsplit=1)
-#            pp.pprint([label, text])
             
             # count the number of 4-grams for each line in training text
             if len(text) >= 4 and label in total_no_of_words:
@@ -111,15 +104,10 @@ def build_LM(in_file):
                 # update count
                 LM[gram][label] += 1
         
-        
-        print(LM['tra '])
-        
         # add one smoothing for each gram
         for gram in LM:
             for lang in LM[gram]:
                 LM[gram][lang] += 1
-        
-        print(LM['tra '])
         
         return convert_counts_to_probability(total_no_of_words, LM)
     
@@ -144,15 +132,11 @@ def test_LM(in_file, out_file, LM):
         grams = convert_line_to_4gramList( text[-1] )
         resulting_lang = estimate_sentence(grams, LM)
         results.append(resulting_lang + ' ' + text[-1])
-        print(resulting_lang)
         
     # write the prediction
     with open(out_file, mode="w", encoding="utf-8") as f:
         for result in results:
             f.write(result + '\n')
-    
-    
-    print(results)
 
 def usage():
     print("usage: " + sys.argv[0] +
