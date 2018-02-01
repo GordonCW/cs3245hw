@@ -50,6 +50,6 @@ printed) from the discussions.
 
 == References ==
 
-LEE WEI QING: He is my classmate and I have discussed the homework with him in order to clarify the requirement stated in the homework.
+LEE WEI QING: He is my classmate and I have discussed the homework with him in order to clarify the requirements stated in the homework.
 
-stackoverflow: I have looked up many method to do some taskes in Python. For example, how to read txt file with correct encoding.
+stackoverflow: I have looked up many methods to do some taskes in Python. For example, how to read txt file with correct encoding.
