@@ -2,13 +2,13 @@ This is the README file for A0179836J's submission
 
 == Python Version ==
 
-I'm (We're) using Python Version <3.6.2> for this assignment.
+I'm using Python Version <3.6.2> for this assignment.
 
 == General Notes about this assignment ==
 
 This program build the language model for each language in the following way. Find all four consecutive characters for all training sentences. Compute the probability of those "4-gram" appearing in the training text.
 
-To find all "4-gram" in a sentence, we take 4 characters of the sentence at a time and slides the window one unit right until the window capture the last four characters.
+To find all "4-gram" in a sentence, I took 4 characters of the sentence at a time and slides the window one unit right until the window capture the last four characters.
 
 Since for each "4-gram", it may appear in all three of the language. I use a dictionary to store the data of the language model. The keys are all the "4-gram" appearing in at least one language. The values are dictionary with keys being three language and those values being the number of times the "4-gram" appears in that language.
 
@@ -19,9 +19,9 @@ To compute the probability, I also count the total number of "4-gram" in each la
 For each language,
 P(<a,b,c,d>) = (Count(<a,b,c,d>) + 1)/(total no. of "4-gram" in that language + total no. of distinct "4-gram" among all language)
 
-After building the language model, any arbitrary 4 consecutive characters <a,b,c,d> either appears in our language model or not. If it appears, we can retrieve the probability of that "4-gram" appearing in that language.
+After building the language model, any arbitrary 4 consecutive characters <a,b,c,d> either appears in our language model or not. If it appears, I can retrieve the probability of that "4-gram" appearing in that language.
 
-Therefore, for the test part, for each sentence, we find all "4-gram" and find the probability of those "4-gram" (if any in our model). Multiply those in the same language to get a estimate probability of that sentence appearing in that language. Output the language with the higher probability for that particular test sentence. The output will be my prediction for the language.
+Therefore, for the test part, for each sentence, I find all "4-gram" and find the probability of those "4-gram" (if any in our model). Multiply those in the same language to get a estimate probability of that sentence appearing in that language. Output the language with the higher probability for that particular test sentence. The output will be my prediction for the language.
 
 To avoid the number being too small and underflow, I used log probability. Since log is an strictly increasing function, the ordering of probability is preserved and direct comparisons of log probability are ok.
 
