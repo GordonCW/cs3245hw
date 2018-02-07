@@ -34,14 +34,9 @@ README.txt		brief description of the homework
 
 Please initial one of the following statements.
 
-[X] I, A0179836J, certify that I have followed the CS 3245 Information
-Retrieval class guidelines for homework assignments.  In particular, I
-expressly vow that I have followed the Facebook rule in discussing
-with others in doing the assignment and did not take notes (digital or
-printed) from the discussions.  
+[X] I, A0179836J, certify that I have followed the CS 3245 Information Retrieval class guidelines for homework assignments. In particular, I expressly vow that I have followed the Facebook rule in discussing with others in doing the assignment and did not take notes (digital or printed) from the discussions.  
 
-[ ] I, A0000000X, did not follow the class rules regarding homework
-assignment, because of the following reason:
+[ ] I, A0000000X, did not follow the class rules regarding homework assignment, because of the following reason:
 
 == References ==
 
