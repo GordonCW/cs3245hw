@@ -86,26 +86,38 @@ class PostingList:
         
     def getHead(self):
         return self.head
-
-class DicValue:
-    """DicValue class with attribute frequency and pointer to posting list
-    """
     
+class DicValue:
+    """DicValue class with attribute frequency and pointer to posting list    
+
+    Pointer is a tuple with two integer value. It indicate the location of the
+    posting list stored in postings.txt file. The first value is the byte
+    offset of the corresponding posting list stored in the postings.txt file.
+    The second is the length of it. Note that it is the bytes encoded by pickle.
+    """
+
     def __init__(self, postingList):
         self.docF = 1
         self.pL = postingList
+        self.pointer = None
     
-    def addOneDoc(self):
-        self.docF += 1
-
     def getPostingList(self):
         return self.pL
     
     def getDocFrequency(self):
         return self.docF
+    
+    def getPointer(self):
+        return self.pointer
 
-    def setpLHead(self, pL):
-        self.pLHead = pL
+    def addOneDoc(self):
+        self.docF += 1
+
+    def setPostingList(self, pL):
+        self.pL = pL
+        
+    def setPointer(self, pointer):
+        self.pointer = pointer
         
     def __repr__(self):
         return str(self)
@@ -185,6 +197,50 @@ dic[key].getDocFrequency() can get docFrequency
 #
 #    print("real count in pl: ", count)
 
+
+
+import pickle
+
+# save posting list into posting.txt and then clear the memory used by those
+# posting list
+with open(output_file_postings, mode="wb") as f:
+    
+    byte_count = 0
+    for term in dic:
+        postingList = dic[term].getPostingList()
+        encodedList = pickle.dumps(postingList)
+        f.write(encodedList)
+        dic[term].setPointer( (byte_count, len(encodedList)) )
+        byte_count += len(encodedList)
+        
+        dic[term].setPostingList(None)
+        
+# save dic into dictionary.txt
+with open(output_file_dictionary, mode="wb") as f:
+    pickle.dump(dic, f)
+
+## checking for loading a posting list
+#with open(output_file_postings, mode="rb") as f:
+#    p = dic['to'].getPointer()
+#    f.seek(p[0])
+#    d = pickle.loads(f.read(p[1]))
+#    
+#    # see the posting list
+#    h = d.getHead()
+#    print('count in dic value: ', dic['to'].getDocFrequency())
+#    count = 0
+#    
+#    while h != None:
+#        count += 1
+#        print(h.getDocId())
+#        h = h.getNext()
+#        
+#    print("real count in pl: ", count)
+
+    
+
+# My notes
+    
 # tokenizing
 # case-folding
 # stemming
