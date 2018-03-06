@@ -50,7 +50,11 @@ dictionary = []
 
 # save DictElement
 dic = {}
+
+# save for later doing the NOT operation
+all_docId = []
 for file in files[:10]:
+    all_docId.append(int(file))
     
     with open(input_directory + '/' + file, mode="r", encoding="utf-8") as f:
         textList = f.readlines()
@@ -63,6 +67,7 @@ for file in files[:10]:
 
 # sort by term
 dictionary.sort(key=lambda x: x[0])
+print(dictionary)
 
 preTuple = None
 for tup in dictionary:
@@ -91,6 +96,12 @@ the value is the DicValue object
 dic[key].getDocFrequency() can get docFrequency
 """
 
+# save special term in dic for later implementing NOT operation
+dic[special_term] = DicValue( PostingList(Node(all_docId[0])) )
+for i in range(1, len(all_docId)):
+    dic[special_term].getPostingList().add(Node(all_docId[i]))
+    dic[special_term].addOneDoc()
+
 ## checking of posting list
 #for key in dic:
 #    l = dic[key].getPostingList()
@@ -109,7 +120,6 @@ dic[key].getDocFrequency() can get docFrequency
 
 
 
-import pickle
 
 # save posting list into posting.txt and then clear the memory used by those
 # posting list

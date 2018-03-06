@@ -1,4 +1,5 @@
 import nltk
+import pickle
 
 # get from string.punctuation
 string_punct = "!\"#$%&'()*+,-./:;<=>?@[\]^_`{|}~"
@@ -6,10 +7,34 @@ string_punct = "!\"#$%&'()*+,-./:;<=>?@[\]^_`{|}~"
 # get stemmer from nltk
 ps = nltk.stem.PorterStemmer()
 
+# special term for saving all docID
+special_term = "ALL_DOC_ID"
+
 ######### functions defined by Gordon
 
 def caseFoldigAndStemming(input):
     return ps.stem(input.lower())
+
+# retrieve posting list from file
+def getPostingList(filename, dictValue):
+    if dictValue == None:
+        return None
+    if dictValue.getPointer() == None:
+        return None
+    with open(filename, mode="rb") as f:
+        p = dictValue.getPointer()
+        f.seek(p[0])
+        return pickle.loads(f.read(p[1]))
+    
+# print posting list for debugging
+def printPostingList(postingList):
+    h = postingList.getHead()
+    count = 0
+    while h != None:
+        count += 1
+        print(h.getDocId())
+        h = h.getNext()
+    print("frequency:", count)
 
 ######### classes created by Gordon
 
