@@ -5,7 +5,8 @@ import sys
 import getopt
 
 def usage():
-    print "usage: " + sys.argv[0] + " -d dictionary-file -p postings-file -q file-of-queries -o output-file-of-results"
+    print "usage: " + sys.argv[0] + \
+    " -d dictionary-file -p postings-file -q file-of-queries -o output-file-of-results"
 
 dictionary_file = postings_file = file_of_queries = output_file_of_results = None
 	
@@ -30,3 +31,4 @@ for o, a in opts:
 if dictionary_file == None or postings_file == None or file_of_queries == None or file_of_output == None :
     usage()
     sys.exit(2)
+

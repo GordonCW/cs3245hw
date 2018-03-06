@@ -176,6 +176,7 @@ Hi Wei Qing,
 Add skip pointer code here
 
 "dic" is our final dictionary
+it is also a python dictionary
 the key is the term
 the value is the DicValue object
 dic[key].getDocFrequency() can get docFrequency
@@ -219,6 +220,19 @@ with open(output_file_postings, mode="wb") as f:
 with open(output_file_dictionary, mode="wb") as f:
     pickle.dump(dic, f)
 
+## testing loading dic
+#testingD = None
+#with open(output_file_dictionary, mode="rb") as f:
+#    testingD = pickle.load(f)
+#
+#for term in dic:
+#    if dic[term].getPostingList() != testingD[term].getPostingList():
+#        print("not equal ", term)
+#    if dic[term].getDocFrequency() != testingD[term].getDocFrequency():
+#        print("not equal ", term)
+#    if dic[term].getPointer() != testingD[term].getPointer():
+#        print("not equal ", term)
+    
 ## checking for loading a posting list
 #with open(output_file_postings, mode="rb") as f:
 #    p = dic['to'].getPointer()
