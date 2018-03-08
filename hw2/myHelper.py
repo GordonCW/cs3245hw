@@ -1,5 +1,6 @@
 import nltk
 import pickle
+import math
 
 # get from string.punctuation
 string_punct = "!\"#$%&'()*+,-./:;<=>?@[\]^_`{|}~"
@@ -9,6 +10,11 @@ ps = nltk.stem.PorterStemmer()
 
 # special term for saving all docID
 special_term = "ALL_DOC_ID"
+
+
+def average_jumps(length):
+    average_jump = int(math.floor(math.sqrt(length)))
+    return average_jump
 
 # functions defined by Gordon
 
@@ -38,10 +44,12 @@ def printPostingList(postingList):
         return None
     h = postingList.getHead()
     count = 0
+    ids = []
     while h != None:
         count += 1
-        print(h.getDocId())
+        ids.append( h.getDocId() )
         h = h.getNext()
+    print( " ".join(str(x) for x in ids) )
     print("frequency:", count)
 
 
@@ -53,6 +61,19 @@ def printSkipPointerList(postingList):
         print(h.getDocId())
         h = h.getSkipNext()
     print("frequency:", count)
+    
+def writePostingListToFile(file, postingList):
+    if postingList == None:
+        file.write("\n")
+        return None
+    h = postingList.getHead()
+    ids = []
+    while h != None:
+        ids.append( h.getDocId() )
+        h = h.getNext()
+    file.write(" ".join(str(x) for x in ids) + "\n")
+    
+    
 # classes created by Gordon
 
 
