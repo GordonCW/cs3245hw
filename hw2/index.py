@@ -71,7 +71,6 @@ for file in files:
 
 # sort by term
 dictionary.sort(key=lambda x: x[0])
-print(dictionary)
 
 preTuple = None
 for tup in dictionary:
