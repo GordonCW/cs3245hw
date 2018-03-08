@@ -33,6 +33,9 @@ def getPostingList(filename, dictValue):
 
 
 def printPostingList(postingList):
+    if postingList == None:
+        print("Posting list has nothing")
+        return None
     h = postingList.getHead()
     count = 0
     while h != None:
@@ -82,17 +85,22 @@ class PostingList:
     def __init__(self, head):
         self.head = head
         self.currentNode = head
+        self.frequency = 1
 
     def add(self, node):
         """add all nodes into the list first before calling resetCurrentNode"""
         self.currentNode.setNext(node)
         self.currentNode = node
+        self.frequency += 1
 
     def resetCurrentNode(self):
         self.currentNode = self.head
 
     def getHead(self):
         return self.head
+    
+    def getFrequency(self):
+        return self.frequency
 
 
 class DicValue:

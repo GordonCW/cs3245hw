@@ -3,7 +3,7 @@ import re
 import nltk
 import sys
 import getopt
-
+import math
 
 def usage():
     print("usage: " + sys.argv[0] +
@@ -144,10 +144,17 @@ for term in dic:
             
             
 print("Hellodjdsskd")
+print("to posting list")
 printPostingList(dic["to"].getPostingList())
-print("Hellodjdsskd")
-printSkipPointerList(dic["to"].getPostingList())
 print(average_jumps(dic["to"].getDocFrequency()))
+
+print("said posting list")
+printPostingList(dic["said"].getPostingList())
+print("report posting list")
+printPostingList(dic["report"].getPostingList())
+print("for posting list")
+printPostingList(dic["for"].getPostingList())
+
 
 # save special term in dic for later implementing NOT operation
 dic[special_term] = DicValue(PostingList(Node(all_docId[0])))
