@@ -2,6 +2,7 @@ import nltk
 import pickle
 import math
 
+
 # get from string.punctuation
 string_punct = "!\"#$%&'()*+,-./:;<=>?@[\]^_`{|}~"
 

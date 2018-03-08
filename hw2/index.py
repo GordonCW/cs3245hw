@@ -37,6 +37,9 @@ start my code here
 
 from myHelper import *
 
+
+sys.setrecursionlimit(25000)
+
 # code start here
 
 # get file name from the input directory
@@ -54,7 +57,7 @@ dic = {}
 
 # save for later doing the NOT operation
 all_docId = []
-for file in files[:200]:
+for file in files:
     all_docId.append(int(file))
 
     with open(input_directory + '/' + file, mode="r", encoding="utf-8") as f:
@@ -86,7 +89,9 @@ for tup in dictionary:
         preTuple = tup
 
 
-
+#create skip pointer
+        
+        
 for term in dic:
 
     termFreq = dic[term].getDocFrequency()
