@@ -124,25 +124,6 @@ for term in dic:
             
             start += avgjump
 
-            
-            
-#            
-#            
-#print("Hellodjdsskd")
-#print("to posting list")
-#printPostingList(dic["to"].getPostingList())
-#print(average_jumps(dic["to"].getDocFrequency()))
-#
-#print("said posting list")
-#printPostingList(dic["said"].getPostingList())
-#print("report posting list")
-#printPostingList(dic["report"].getPostingList())
-#print("for posting list")
-#printPostingList(dic["for"].getPostingList())
-#print("not posting list")
-#printPostingList(dic["not"].getPostingList())
-#print("approv posting list")
-#printPostingList(dic["approv"].getPostingList())
 
 
 # save special term in dic for later implementing NOT operation
@@ -169,19 +150,3 @@ with open(output_file_postings, mode="wb") as f:
 # save dic into dictionary.txt
 with open(output_file_dictionary, mode="wb") as f:
     pickle.dump(dic, f)
-
-
-# My notes only
-
-# tokenizing
-# case-folding
-# stemming
-
-# sorting by terms
-
-# count frequency and make posting list
-
-# add skip pointers in posting list
-
-# save posting list in a txt file by pickle
-# save dictionary in a txt file

@@ -66,7 +66,6 @@ def shunting_yard_algo(lst):
             #not a parenthesis
             
             else:
-                print(token)
                 if len(opt_stack) == 0:
                     opt_stack.append(token)
 
@@ -105,9 +104,6 @@ def postfixEvaluation(postfix):
                 operand1 = stack.pop()
                 operand2 = stack.pop()
                 result = OR(operand1, operand2)
-#                print("used OR!!!!!")
-#                print("below is the result of OR")
-#                printPostingList(result)
             elif token == "AND":
                 
                 i = 0
@@ -145,12 +141,8 @@ def postfixEvaluation(postfix):
                             postingListContainer.pop(j)
                             break
                     
-#                    print(len(postingListContainer))
-#                    print("see posting list hereeeeeeeee")
-#                    printPostingList(operand1)
                     # do the merging
                     for postingList in postingListContainer:
-                        printPostingList(postingList)
                         operand1 = AND(operand1, postingList)
                     
                     # put the result in the result variable
@@ -162,9 +154,6 @@ def postfixEvaluation(postfix):
                     operand2 = stack.pop()
                     result = AND(operand1, operand2)
                     
-#                print("used AND!!!!!")
-#                print("below is the result of AND")
-#                printPostingList(result)
             else:
                 if token == "NOT":
                     token1 = postfix.pop(0)
@@ -172,9 +161,6 @@ def postfixEvaluation(postfix):
                         operand1 = stack.pop()
                         operand2 = stack.pop()
                         result = ANDNOT(operand2, operand1)
-#                        print("used ANDNOT!!!!!")
-#                        print("below is the result of ANDNOT")
-#                        printPostingList(result)
                     elif token1 not in operator and postfix[0] == "AND":
                         #get rid of AND
                         postfix.pop(0)
@@ -184,29 +170,15 @@ def postfixEvaluation(postfix):
                         chosen1 = getPostingList(postings_file, dic[token1])
                         chosen2 = stack.pop()
                         
-#                        print()
-#                        print(token1)
-#                        printPostingList(chosen1)
-#                        print()
-#                        printPostingList(chosen2)
-                        
                         result = ANDNOT(chosen1, chosen2)
-#                        print("used ANDNOT!!!!!")
-#                        print("below is the result of ANDNOT")
-#                        printPostingList(result)
                     else:
                         postfix.insert(0, token1)
                         operand1 = stack.pop()
                         result = NOT(operand1)
-#                        print("used NOT!!!!!")
-#                        print("below is the result of NOT")
-#                        printPostingList(result)
             stack.append(result) 
         else:
             token = caseFoldigAndStemming(token)
             if token in dic:
-#                print("This token is")
-#                print(token)
                 stack.append( getPostingList(postings_file, dic[token]) )
                 
             else:
@@ -244,7 +216,6 @@ def AND(postingList1, postingList2):
                 # use skip pointer if the order is preserved
                 if tempP.getDocId() <= p2.getDocId():
                     p1 = tempP
-                    print("skip pointer used")
                 else:
                     p1 = p1.getNext()
             else:
@@ -258,7 +229,6 @@ def AND(postingList1, postingList2):
                 # use skip pointer if the order is preserved
                 if tempP.getDocId() <= p1.getDocId():
                     p2 = tempP
-                    print("skip pointer used")
                 else:
                     p2 = p2.getNext()
             else:
@@ -376,181 +346,18 @@ def NOT(postingList):
 dic = None
 with open(dictionary_file, mode="rb") as f:
     dic = pickle.load(f)
-    
-    
-######### test case here
-# mainly test skip pointer here
-print("Posting List of \"the\"")
-p1 = getPostingList(postings_file, dic["the"])
-printPostingList( p1 )
-
-print()
-
-print("Posting List of \"show\"")
-p2 = getPostingList(postings_file, dic["show"])
-printPostingList( p2 )
-
-print()
-
-print("Posting List of the AND show")
-resu = AND(p1, p2)
-printPostingList( resu )
 
 
-print()
-print()
-print()
-
-
-# mainly test correctness AND here
-print("Posting List of \"approv\"")
-p1 = getPostingList(postings_file, dic["approv"])
-printPostingList( p1 )
-
-print()
-
-print("Posting List of \"show\"")
-p2 = getPostingList(postings_file, dic["show"])
-printPostingList( p2 )
-
-print()
-
-print("Posting List of approv AND show")
-resu = AND(p1, p2)
-printPostingList( resu )
-
-print()
-print()
-print()
-
-# mainly test correctness of OR here
-print("Posting List of \"pay\"")
-p1 = getPostingList(postings_file, dic["pay"])
-printPostingList( p1 )
-
-print()
-
-print("Posting List of \"show\"")
-p2 = getPostingList(postings_file, dic["show"])
-printPostingList( p2 )
-
-print()
-
-print("Posting List of pay OR show")
-resu = OR(p1, p2)
-printPostingList( resu )
-
-print()
-print()
-print()
-
-# mainly test correctness ANDNOT here
-print("Posting List of \"approv\"")
-p1 = getPostingList(postings_file, dic["approv"])
-printPostingList( p1 )
-
-print()
-
-print("Posting List of \"show\"")
-p2 = getPostingList(postings_file, dic["show"])
-printPostingList( p2 )
-
-print()
-
-print("Posting List of approv ANDNOT show")
-resu = ANDNOT(p1, p2)
-printPostingList( resu )
-
-
-print()
-print()
-print()
-
-# mainly test correctness OR here
-print("Posting List of \"approv\"")
-p1 = getPostingList(postings_file, dic["approv"])
-printPostingList( p1 )
-
-print()
-
-print("Posting List of \"show\"")
-p2 = getPostingList(postings_file, dic["show"])
-printPostingList( p2 )
-
-print()
-
-print("Posting List of approv OR show")
-resu = OR(p1, p2)
-printPostingList( resu )
-
-
-print()
-print()
-print()
-
-
-# mainly test correctness NOT here
-print("Posting List of \"and\"")
-p1 = getPostingList(postings_file, dic["approv"])
-printPostingList( p1 )
-
-print()
-
-print("Posting List of NOT and")
-resu = NOT(p1)
-printPostingList( resu )
-print(dic[special_term].getDocFrequency())
-
-
-print()
-print()
-print()
 
 # read queries and process it
 # write it back to the result file
 with open(file_of_output, "w", encoding="utf-8" ) as t:
     with open(file_of_queries, "r",  encoding="utf-8" ) as f:
         data = f.readlines()
-        print(data)
         for query in data:
             query = query.rstrip("\n")
-            print(query)
-            
             post_fix = shunting_yard_algo(query)
-            print(post_fix)
-            
             ans = postfixEvaluation(post_fix)
-            
-            print()
-            print()
-            print()
-            print("result of the query::::::::::")
-            printPostingList(ans)
-            print()
-            print()
-            print()
             writePostingListToFile(t, ans)
-
-
-p1 = getPostingList(postings_file, dic["will"])
-p2 = getPostingList(postings_file, dic["vs"])
-
-print("Posting List of NOT and")
-resu = AND(p1, p2)
-p3 = getPostingList(postings_file, dic["trade"])
-resu = AND(resu, p3)
-p3 = getPostingList(postings_file, dic["they"])
-resu = ANDNOT(resu, p3)
-
-
-
-p3 = getPostingList(postings_file, dic["than"])
-resu = AND(resu, p3)
-
-p3 = getPostingList(postings_file, dic["stock"])
-resu = OR(resu, p3)
-printPostingList( resu )
-
-
 
 
