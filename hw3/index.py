@@ -95,10 +95,15 @@ for tup in dictionary:
         else:
             currNode.incrementTermFrequency()
 
+# pre calculate log term frequency for searching later
+for term in dic:
+    pl = dic[term].getPostingList()
+    h = pl.getHead()
+    while h != None:
+        h.calculateLogTF()
+        h = h.getNext()
 
 # create skip pointer
-
-
 for term in dic:
 
     termFreq = dic[term].getDocFrequency()

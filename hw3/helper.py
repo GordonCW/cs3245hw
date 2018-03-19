@@ -106,6 +106,9 @@ class Node:
     def incrementTermFrequency(self):
         self.termFrequency = self.termFrequency + 1
 
+    def calculateLogTF(self):
+        self.termFrequency = 1 + math.log(self.termFrequency, 10)
+
 
 class PostingList:
 
