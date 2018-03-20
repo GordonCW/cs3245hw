@@ -68,13 +68,14 @@ for file in files:
     v = 0
     for line in textList:
         for word in nltk.word_tokenize(line):
-            if word not in string_punct:   # to get rid of single punctuation
-                # make tuple for sorting
-                dictionary.append((caseFoldigAndStemming(word), int(file)))
+            # make tuple for sorting
+            dictionary.append((caseFoldigAndStemming(word), int(file)))
+
             # count value
             v = v + 1
+
+    # save doc length
     lengthOfDocument[int(file)] = v
-    #lengthOfDocument.update({int(file): v})
 
 
 # sort by term
