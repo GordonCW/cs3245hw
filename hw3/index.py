@@ -55,6 +55,9 @@ dictionary = []
 # save DictElement
 dic = {}
 
+# if the value of key d is a number, the number is the sum of tf_t,d over all term t
+# if the value of key d is a tuple, the first entry will be the above number.
+# the second entry will be the weighted lenght of the document vector
 lengthOfDocument = {}
 
 # save for later doing the NOT operation
@@ -81,6 +84,7 @@ for file in files:
 # sort by term
 dictionary.sort(key=lambda x: x[0])
 
+# for each term and document, copmute the tf
 for tup in dictionary:
 
     # save the term and the docId in dic's value
@@ -90,19 +94,43 @@ for tup in dictionary:
         # exist in the dictionary
         currNode = dic[tup[0]].getPostingList().getCurrentNode()
         docId = currNode.getDocId()
+
+        # different docId
         if docId != tup[1]:
             dic[tup[0]].getPostingList().add(Node(tup[1]))
             dic[tup[0]].addOneDoc()
         else:
             currNode.incrementTermFrequency()
 
-# pre calculate log term frequency for searching later
+# pre compute log term frequency for searching later
 for term in dic:
     pl = dic[term].getPostingList()
     h = pl.getHead()
     while h != None:
         h.calculateLogTF()
         h = h.getNext()
+
+# pre compute the document vector length for searching later
+tempLenDic = {}
+for term in dic:
+    pl = dic[term].getPostingList()
+    h = pl.getHead()
+    while h != None:
+        docId = h.getDocId()
+        if docId not in tempLenDic:
+            tempLenDic[docId] = h.getTermFrequency()*h.getTermFrequency()
+        h = h.getNext()
+
+# compute the square root one and save in lengthOfDocument
+for docId in tempLenDic:
+    if docId in lengthOfDocument:
+        lengthOfDocument[docId] =\
+        ( lengthOfDocument[docId], math.sqrt(tempLenDic[docId]) )
+    else:
+        sys.exit("Error!")
+
+# remove the useless dictionary
+del tempLenDic
 
 # create skip pointer
 for term in dic:
