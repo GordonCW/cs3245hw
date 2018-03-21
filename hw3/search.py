@@ -413,6 +413,11 @@ def cosineScore(q):
                 scores[indexInScores][1] += h.getTermFrequency() * queryDic[term]
             
             h = h.getNext()
+
+    # normalize scorse
+    for x in scores:
+        if x[1] != None:
+            x[1] /= lengthOfDocument[docIds[x[0]]][1]
     
     # compute a list of tuple consisting of a nonNone-score docId and its score
     nonzeroScoresList = [(x[0], x[1]) for x in scores if x[1] != None]
@@ -452,6 +457,11 @@ N = len(docIds)
 docIdToIndexMap = {}
 for i in range(len(docIds)):
     docIdToIndexMap[docIds[i]] = i
+    
+#print('u.s.a' in dic)
+#print('america' in dic)
+#print('american' in dic)
+#print('april/may' in dic)
     
 
 #maxcount = 0
