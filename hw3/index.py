@@ -60,47 +60,57 @@ dic = {}
 # the second entry will be the weighted lenght of the document vector
 lengthOfDocument = {}
 
-# save for later doing the NOT operation
-all_docId = []
+## save for later doing the NOT operation
+#all_docId = []
 for file in files:
-    all_docId.append(int(file))
+#    all_docId.append(int(file))
 
     with open(input_directory + '/' + file, mode="r", encoding="utf-8") as f:
         textList = f.readlines()
 
-    v = 0
+    termCounter = 0
     for line in textList:
         for word in nltk.word_tokenize(line):
             # make tuple for sorting
             dictionary.append((caseFoldigAndStemming(word), int(file)))
 
             # count value
-            v = v + 1
+            termCounter += 1
 
     # save doc length
-    lengthOfDocument[int(file)] = v
+    lengthOfDocument[int(file)] = termCounter
 
 
 # sort by term
 dictionary.sort(key=lambda x: x[0])
 
-# for each term and document, copmute the tf
+# for each term and document, compute the tf
 for tup in dictionary:
 
-    # save the term and the docId in dic's value
     if tup[0] not in dic:
         dic[tup[0]] = DicValue(PostingList(Node(tup[1])))
     else:
         # exist in the dictionary
         currNode = dic[tup[0]].getPostingList().getCurrentNode()
-        docId = currNode.getDocId()
+        previousDocId = currNode.getDocId()
 
         # different docId
-        if docId != tup[1]:
+        if previousDocId != tup[1]:
             dic[tup[0]].getPostingList().add(Node(tup[1]))
             dic[tup[0]].addOneDoc()
         else:
             currNode.incrementTermFrequency()
+
+#maxcount = 0
+#maxid = 0
+#pl = dic['america'].getPostingList()
+#h = pl.getHead()
+#while h != None:
+#    if h.getTermFrequency()>maxcount:
+#        maxcount = h.getTermFrequency()
+#        maxid = h.getDocId()
+#    h = h.getNext()
+#print(maxid, maxcount)
 
 # pre compute log term frequency for searching later
 for term in dic:
@@ -170,11 +180,13 @@ del tempLenDic
 #            start += avgjump
 
 
-# save special term in dic for later implementing NOT operation
-dic[special_term] = DicValue(PostingList(Node(all_docId[0])))
-for i in range(1, len(all_docId)):
-    dic[special_term].getPostingList().add(Node(all_docId[i]))
-    dic[special_term].addOneDoc()
+## save special term in dic for later implementing NOT operation
+#dic[special_term] = DicValue(PostingList(Node(all_docId[0])))
+#for i in range(1, len(all_docId)):
+#    dic[special_term].getPostingList().add(Node(all_docId[i]))
+#    dic[special_term].addOneDoc()
+
+print("saving...")
 
 
 # save posting list into posting.txt and then clear the memory used by those
