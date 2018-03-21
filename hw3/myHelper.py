@@ -4,7 +4,9 @@ import math
 
 
 # get from string.punctuation
-string_punct = "!\"#$%&'()*+,-./:;<=>?@[\]^_`{|}~"
+string_punct = ['!', '"', '#', '$', '%', '&', "'", '(', ')', '*', '+', ',',
+                '-', '.', '/', ':', ';', '<', '=', '>', '?', '@', '[', '\\',
+                ']', '^', '_', '`', '{', '|', '}', '~', '--', "''", '...']
 
 # get stemmer from nltk
 ps = nltk.stem.PorterStemmer()

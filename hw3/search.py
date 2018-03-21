@@ -458,10 +458,10 @@ docIdToIndexMap = {}
 for i in range(len(docIds)):
     docIdToIndexMap[docIds[i]] = i
     
-#print('u.s.a' in dic)
-#print('america' in dic)
-#print('american' in dic)
-#print('april/may' in dic)
+print('u.s.a' in dic)
+print('america' in dic)
+print('american' in dic)
+print('april/may' in dic)
     
 
 #maxcount = 0
