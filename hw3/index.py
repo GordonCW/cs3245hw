@@ -118,7 +118,9 @@ for term in dic:
     while h != None:
         docId = h.getDocId()
         if docId not in tempLenDic:
-            tempLenDic[docId] = h.getTermFrequency()*h.getTermFrequency()
+            tempLenDic[docId] = h.getTermFrequency() * h.getTermFrequency()
+        else:
+            tempLenDic[docId] += h.getTermFrequency() * h.getTermFrequency()
         h = h.getNext()
 
 # compute the square root one and save in lengthOfDocument
@@ -132,38 +134,40 @@ for docId in tempLenDic:
 # remove the useless dictionary
 del tempLenDic
 
-# create skip pointer
-for term in dic:
 
-    termFreq = dic[term].getDocFrequency()
 
-    avgjump = average_jumps(termFreq)
-
-    # if length is less than 3 then dont need skip pointer
-    if dic[term].getDocFrequency() > 3:
-
-        # start at first ID
-        start = 0
-        # get postingList
-        pl = dic[term].getPostingList()
-        # get the head of the postingList
-        head = pl.getHead()
-
-        temp = head
-
-        while start < termFreq:
-
-            for i in range(avgjump):
-                temp = temp.getNext()
-                if temp == None:
-                    break
-            # setSkipPointer
-            head.setSkipNext(temp)
-            # current node set to head
-            head = temp
-            # reset the counter
-
-            start += avgjump
+## create skip pointer
+#for term in dic:
+#
+#    termFreq = dic[term].getDocFrequency()
+#
+#    avgjump = average_jumps(termFreq)
+#
+#    # if length is less than 3 then dont need skip pointer
+#    if dic[term].getDocFrequency() > 3:
+#
+#        # start at first ID
+#        start = 0
+#        # get postingList
+#        pl = dic[term].getPostingList()
+#        # get the head of the postingList
+#        head = pl.getHead()
+#
+#        temp = head
+#
+#        while start < termFreq:
+#
+#            for i in range(avgjump):
+#                temp = temp.getNext()
+#                if temp == None:
+#                    break
+#            # setSkipPointer
+#            head.setSkipNext(temp)
+#            # current node set to head
+#            head = temp
+#            # reset the counter
+#
+#            start += avgjump
 
 
 # save special term in dic for later implementing NOT operation

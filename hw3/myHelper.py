@@ -1,6 +1,7 @@
 import nltk
 import pickle
 import math
+import heapq
 
 
 # get from string.punctuation

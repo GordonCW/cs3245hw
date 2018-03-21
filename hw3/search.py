@@ -343,15 +343,111 @@ def NOT(postingList):
 
     return result
 
+def calculateQueryLogTF(q):
+    tempList = []
+    tempQueryDic = {}
+    for term in q:
+        if term in dic:
+            tempList.append(term)
+        
+        # else do not save
+    
+    # nothing to query
+    if len(tempList) == 0:
+        return None
+    
+    tempList.sort()
+    
+    # count term frequency in query
+    for term in tempList:
+        if term not in tempQueryDic:
+            tempQueryDic[term] = 1
+        else:
+            tempQueryDic[term] += 1
+    
+    # compute ltf
+    for term in tempQueryDic:
+        tempQueryDic[term] = 1 + math.log(tempQueryDic[term], 10)
+    
+    return tempQueryDic
+
+def multiplyIDF(tempQueryDic):
+    if tempQueryDic == None:
+        return None
+    for term in tempQueryDic:
+        # term must be in dic since checked in last function
+        tempQueryDic[term] *= math.log(N/dic[term].getDocFrequency(), 10)
+    
+    return tempQueryDic
+
+def cosineScore(q):
+    # init scores
+    scores = [ [i, 0] for i in range(len(docIds))]
+    
+    # compute weighted tf_t,q
+    queryDic = calculateQueryLogTF(q)
+    queryDic = multiplyIDF(queryDic)
+    
+    # nothing to query
+    if queryDic == None:
+        return None
+    
+    # compute dot product
+    for term in queryDic:
+        # load posting list
+        pl = getPostingList(postings_file, dic[term])
+        h = pl.getHead()
+        
+        # iterate through the posting list
+        while h != None:
+            # retrieve the corresponding index in scores array
+            tempDocId = h.getDocId()
+            indexInScores = docIdToIndexMap[tempDocId]
+            
+            # accumulate scores
+            # h.getTermFrequency() return the weighted tf as computed in index.py
+            scores[indexInScores][1] += h.getTermFrequency() * queryDic[term]
+            
+            h = h.getNext()
+    
+    # compute a list of tuple consisting of a nonzero-score docId and its score
+    nonzeroScoresList = [(x[0], x[1]) for x in scores if x[1]>0]
+    
+    result = None
+    if len(nonzeroScoresList) > 10:
+        result = heapq.nlargest(10, nonzeroScoresList, key=lambda x: x[1])
+    else:
+        result = nonzeroScoresList.sort(key=lambda x: x[1], reverse=True)
+
+    # return the real docIds
+    return [docIds[x[0]] for x in result]
 
 # code start here
 
 
 # load dic back into memory
 dic = None
+
+lengthOfDocument = None
 with open(dictionary_file, mode="rb") as f:
     dic = pickle.load(f)
 
+with open("docLength.txt", mode="rb") as f:
+    lengthOfDocument = pickle.load(f)
+
+docIds = list(lengthOfDocument.keys())
+docIds.sort()
+N = len(docIds)
+docIdToIndexMap = {}
+for i in range(len(docIds)):
+    docIdToIndexMap[docIds[i]] = i
+
+#pl = getPostingList(postings_file, dic['year'])
+#h = pl.getHead()
+#while h != None:
+#    print(h.getDocId(), end=' ')
+#    h = h.getNext()
+#print()
 
 # read queries and process it
 # write it back to the result file
@@ -360,6 +456,11 @@ with open(file_of_output, "w", encoding="utf-8") as t:
         data = f.readlines()
         for query in data:
             query = query.rstrip("\n")
-            post_fix = shunting_yard_algo(query)
-            ans = postfixEvaluation(post_fix)
-            writePostingListToFile(t, ans)
+            query = word_tokenize(query)
+            query = [caseFoldigAndStemming(token) for token in query]
+            queryResult = cosineScore(query)
+            if queryResult == None:
+                t.write('\n')
+            else:
+                t.write(' '.join(str(x) for x in queryResult) + '\n')
+            
