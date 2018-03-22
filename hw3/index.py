@@ -60,10 +60,7 @@ dic = {}
 # the second entry will be the weighted lenght of the document vector
 lengthOfDocument = {}
 
-## save for later doing the NOT operation
-#all_docId = []
 for file in files:
-#    all_docId.append(int(file))
 
     with open(input_directory + '/' + file, mode="r", encoding="utf-8") as f:
         textList = f.readlines()
@@ -103,17 +100,6 @@ for tup in dictionary:
         else:
             currNode.incrementTermFrequency()
 
-#maxcount = 0
-#maxid = 0
-#pl = dic['america'].getPostingList()
-#h = pl.getHead()
-#while h != None:
-#    if h.getTermFrequency()>maxcount:
-#        maxcount = h.getTermFrequency()
-#        maxid = h.getDocId()
-#    h = h.getNext()
-#print(maxid, maxcount)
-
 # pre compute log term frequency for searching later
 for term in dic:
     pl = dic[term].getPostingList()
@@ -145,50 +131,6 @@ for docId in tempLenDic:
 
 # remove the useless dictionary
 del tempLenDic
-
-
-
-## create skip pointer
-#for term in dic:
-#
-#    termFreq = dic[term].getDocFrequency()
-#
-#    avgjump = average_jumps(termFreq)
-#
-#    # if length is less than 3 then dont need skip pointer
-#    if dic[term].getDocFrequency() > 3:
-#
-#        # start at first ID
-#        start = 0
-#        # get postingList
-#        pl = dic[term].getPostingList()
-#        # get the head of the postingList
-#        head = pl.getHead()
-#
-#        temp = head
-#
-#        while start < termFreq:
-#
-#            for i in range(avgjump):
-#                temp = temp.getNext()
-#                if temp == None:
-#                    break
-#            # setSkipPointer
-#            head.setSkipNext(temp)
-#            # current node set to head
-#            head = temp
-#            # reset the counter
-#
-#            start += avgjump
-
-
-## save special term in dic for later implementing NOT operation
-#dic[special_term] = DicValue(PostingList(Node(all_docId[0])))
-#for i in range(1, len(all_docId)):
-#    dic[special_term].getPostingList().add(Node(all_docId[i]))
-#    dic[special_term].addOneDoc()
-
-print("saving...")
 
 
 # save posting list into posting.txt and then clear the memory used by those
