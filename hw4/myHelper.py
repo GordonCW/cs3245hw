@@ -19,7 +19,15 @@ ps = nltk.stem.PorterStemmer()
 special_term = "ALL_DOC_ID"
 
 def putDocIntoList(lis, docContent, docId):
-    tokens = [word for word in nltk.word_tokenize(docContent.translate(table))]
+    tokens = []
+    
+    # tokenize
+    for words in nltk.word_tokenize(docContent):
+        words.translate(table)
+        for word in words.split(' '):
+            tokens.append(word)
+        
+    tokens = [word for word in nltk.word_tokenize(docContent)]
     initTerms = [caseFoldigAndStemming(token) for token in tokens]
     terms = []
     for term in initTerms:

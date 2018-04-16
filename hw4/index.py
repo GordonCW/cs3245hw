@@ -175,17 +175,17 @@ for d in lenOfDocVector:
     lenOfDocVector[d][1] = math.sqrt(lenOfDocVector[d][1])
 
 
-# for testing query later
-with open("terms.txt", mode="w") as f:
-    for term in dic:
-
-        pl = dic[term].getPostingList()
-        h = pl.getHead()
-        docIds = []
-        while h != None:
-            docIds.append(h.getDocId())
-            h = h.getNext()
-        f.write(term+': '+' '.join(str(d) for d in docIds)+'\n')
+## for testing query later
+#with open("terms.txt", mode="w") as f:
+#    for term in dic:
+#
+#        pl = dic[term].getPostingList()
+#        h = pl.getHead()
+#        docIds = []
+#        while h != None:
+#            docIds.append(h.getDocId())
+#            h = h.getNext()
+#        f.write('"'+term+'"'+': '+' '.join(str(d) for d in docIds)+'\n')
 
 # save posting list into posting.txt and then clear the memory used by those
 # posting list
