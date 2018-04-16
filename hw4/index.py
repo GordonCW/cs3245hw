@@ -49,8 +49,10 @@ TEST_OVER_NO_OF_DOC = 1
 
 # map colunms name to the index
 colIndex = {}
-
 dictList = []
+
+# our final dictionary
+dic = {}
 with open(dataset_file, newline='') as f:
     # [17153 rows x 5 columns]
     reader = csv.reader(f)
@@ -110,56 +112,91 @@ dictList.sort(key=lambda x: x[0])
 
 
 
-print(dictList)
-
-
-df = pd.read_csv(dataset_file)
-print(df)
-#
-##tempDf = df[df['content'].str.contains('//<!\[')]
-#df['containsCode'] = df['content'].str.contains('//<!\[')
-#
-#print(df.dtypes)
-#
-#
-#counter = 0
-#contentSplitLen = []
-#for index, row in df.iterrows():
-#    print(counter)
-#    counter += 1
-#    docContent = None
-#    if row['containsCode'] == True:
-#        contentSplit = row['content'].split('//<![', 1)
-#        if len(contentSplit[0]) == 0:
-#            contentSplit = contentSplit[1].split('//]]>', 1)
-#    
-#            docContent = contentSplit[1]
-#        else:
-#            docContent = contentSplit[0]
-#    else:
-#        docContent = row['content']
-#        
-#    putDocIntoList(dictList, docContent, row['document_id'])
-##    print(dictList)
-##    sys.exit(-1)
-#
-#print(dictList)
-
-        
-
-#for row in df:
-#    print(row)
+# print(dictList)
 
 
 
+# step 6
+# for each term and document, compute the tf
+for term, docId in dictList:
+
+    if term not in dic:
+        dic[term] = DicValue(PostingList(Node(docId)))
+    else:
+        # exist in the dic
+        currNode = dic[term].getPostingList().getCurrentNode()
+        previousDocId = currNode.getDocId()
+
+        # different docId
+        if previousDocId != docId:
+            dic[term].getPostingList().add(Node(docId))
+            dic[term].addOneDoc()
+        else:
+            currNode.incrementTermFrequency()
 
 
-#print(tempDf['document_id'])
-#print("hello")
-#tempDf = tempDf['document_id']
-#listDf = tempDf.values.T.tolist()
-##convert into list
-#if(401233150 in listDf):
-#    print("hello we")
-    
-    
+# step 7
+# pre compute log term frequency for searching later
+for term in dic:
+    pl = dic[term].getPostingList()
+    h = pl.getHead()
+
+    # iterate through the posting list
+    while h != None:
+        h.calculateLogTF()
+        h = h.getNext()
+
+
+# step 8
+# pre compute the document vector length for searching later
+# value is a list. the first one consider all term in dic
+# the second one consider only unigram in dic
+lenOfDocVector = {}
+for term in dic:
+    pl = dic[term].getPostingList()
+    h = pl.getHead()
+    while h != None:
+        docId = h.getDocId()
+        squaredTF = h.getTermFrequency() * h.getTermFrequency()
+        if docId not in lenOfDocVector:
+            lenOfDocVector[docId] = [squaredTF, 0]
+        else:
+            lenOfDocVector[docId][0] += squaredTF
+
+        # check if it is unigram
+        if ' ' not in term:
+            lenOfDocVector[docId][1] += squaredTF
+        h = h.getNext()
+
+# computer entry-wise sqrt for lenOfDocVector
+for d in lenOfDocVector:
+    lenOfDocVector[d][0] = math.sqrt(lenOfDocVector[d][0])
+    lenOfDocVector[d][1] = math.sqrt(lenOfDocVector[d][1])
+
+
+
+
+
+
+
+# save posting list into posting.txt and then clear the memory used by those
+# posting list
+with open(output_file_postings, mode="wb") as f:
+
+    byte_count = 0
+    for term in dic:
+        postingList = dic[term].getPostingList()
+        encodedList = pickle.dumps(postingList)
+        f.write(encodedList)
+        dic[term].setPointer((byte_count, len(encodedList)))
+        byte_count += len(encodedList)
+
+        dic[term].setPostingList(None)
+
+# save dic into dictionary.txt
+with open(output_file_dictionary, mode="wb") as f:
+    pickle.dump(dic, f)
+
+# save length into docLength.txt
+with open("docLength.txt", mode="wb") as f:
+    pickle.dump(lenOfDocVector, f)
