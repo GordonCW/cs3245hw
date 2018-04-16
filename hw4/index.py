@@ -56,10 +56,10 @@ dic = {}
 with open(dataset_file, newline='') as f:
     # [17153 rows x 5 columns]
     reader = csv.reader(f)
-    
+
     # skip header
     header = next(reader)
-    
+
     # map colunms name to the index
     for i in range(len(header)):
         colIndex[header[i]] = i
@@ -68,18 +68,18 @@ with open(dataset_file, newline='') as f:
     for row in reader:
         print(counter)
         counter += 1
-        docId = int(row[ colIndex['document_id'] ])
-        docContent = row[ colIndex['content'] ]
-        
+        docId = int(row[colIndex['document_id']])
+        docContent = row[colIndex['content']]
+
         if '//<!\[' in docContent:
             contentSplit = docContent.split('//<![', 1)
             if len(contentSplit[0]) == 0:
                 contentSplit = contentSplit[1].split('//]]>', 1)
-        
+
                 docContent = contentSplit[1]
             else:
                 docContent = contentSplit[0]
-            
+
         # remove puntuation, tokenizing, case folding and stemming
         tokens = [word for word in nltk.word_tokenize(docContent.translate(table))]
         initTerms = [caseFoldigAndStemming(token) for token in tokens]
@@ -93,16 +93,16 @@ with open(dataset_file, newline='') as f:
         # add unigram into lis
         for term in terms:
             dictList.append((term, docId))
-        
+
         # add bigram into lis
         if len(terms) >= 2:
-            for i in range(len(terms)-1):
-                dictList.append((terms[i]+' '+terms[i+1], docId))
-        
+            for i in range(len(terms) - 1):
+                dictList.append((terms[i] + ' ' + terms[i + 1], docId))
+
         # add trigram into lis
         if len(terms) >= 3:
-            for i in range(len(terms)-2):
-                dictList.append((terms[i]+' '+terms[i+1]+' '+terms[i+2], docId))
+            for i in range(len(terms) - 2):
+                dictList.append((terms[i] + ' ' + terms[i + 1] + ' ' + terms[i + 2], docId))
 
         # limit the size of corpus for testing
         if counter == TEST_OVER_NO_OF_DOC:
@@ -111,9 +111,7 @@ with open(dataset_file, newline='') as f:
 dictList.sort(key=lambda x: x[0])
 
 
-
 # print(dictList)
-
 
 
 # step 6
@@ -174,11 +172,6 @@ for d in lenOfDocVector:
     lenOfDocVector[d][1] = math.sqrt(lenOfDocVector[d][1])
 
 
-
-
-
-
-
 # save posting list into posting.txt and then clear the memory used by those
 # posting list
 with open(output_file_postings, mode="wb") as f:
@@ -188,6 +181,8 @@ with open(output_file_postings, mode="wb") as f:
         postingList = dic[term].getPostingList()
         encodedList = pickle.dumps(postingList)
         f.write(encodedList)
+
+        # location of posting list and how many bytes to save it
         dic[term].setPointer((byte_count, len(encodedList)))
         byte_count += len(encodedList)
 
