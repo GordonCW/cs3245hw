@@ -131,7 +131,79 @@ def cosineScore(q):
     return [docIds[x[0]] for x in result]
 
 
+def AND(postingList1, postingList2):
+    if postingList1 == None or postingList2 == None:
+        return None
+    result = None
+    p1 = postingList1.getHead()
+    p2 = postingList2.getHead()
+    while p1 != None and p2 != None:
+        if p1.getDocId() == p2.getDocId():
+
+            if result == None:
+                result = PostingList(Node(p1.getDocId()))
+            else:
+                result.add(Node(p1.getDocId()))
+            p1 = p1.getNext()
+            p2 = p2.getNext()
+
+        elif p1.getDocId() < p2.getDocId():
+
+            if p1.getSkipNext() != None:
+                tempP = p1.getSkipNext()
+
+                # use skip pointer if the order is preserved
+                if tempP.getDocId() <= p2.getDocId():
+                    p1 = tempP
+                else:
+                    p1 = p1.getNext()
+            else:
+                p1 = p1.getNext()
+
+        else:
+
+            if p2.getSkipNext() != None:
+                tempP = p2.getSkipNext()
+
+                # use skip pointer if the order is preserved
+                if tempP.getDocId() <= p1.getDocId():
+                    p2 = tempP
+                else:
+                    p2 = p2.getNext()
+            else:
+                p2 = p2.getNext()
+
+    return result
+
+
+def booleanQuery(query):
+    if len(query) == 0:
+        return None
+    elif len(query) == 1:
+        if query[0] in dic:
+            return getPostingList(postings_file, dic[query[0]])
+        else:
+            return None
+
+    # query here must have size larger than 1
+    postings = []
+    for term in query:
+        if term not in dic:
+            return None
+        else:
+            posting = getPostingList(postings_file, dic[term])
+            if posting != None:
+                postings.append(posting)
+            else:
+                return None
+
+    result = AND(postings[0], postings[1])
+    for p in postings[2:]:
+        result = AND(result, p)
+    return result
+
 # code start here
+
 
 dic = None
 lengthOfDocument = None
@@ -154,13 +226,40 @@ for i in range(len(docIds)):
 with open(file_of_output, "w", encoding="utf-8") as t:
     with open(file_of_queries, "r", encoding="utf-8") as f:
         data = f.readlines()
-        for query in data:
-            query = query.rstrip("\n")
-            query = nltk.word_tokenize(query)
-            query = [caseFoldigAndStemming(token) for token in query]
+        queryResult = None
+        if '"' in data or "AND" in data:
+            if "AND" in data:
+                qList = data.split("AND")
 
-            queryResult = cosineScore(query)
-            if queryResult == None:
-                t.write('\n')
+                # preprocess
+                for q in qList:
+                    q = q.replace('"', '')
+                    q = nltk.word_tokenize(data)
+                    q.translate(table)
+                    q = [caseFoldigAndStemming(token) for token in q]
+
+                queries = []
+                for q in qList:
+                    if len(q) <= 3:
+                        queries.append(' '.join(q))
+                    else:
+                        for i in range(len(q) - 2):
+                            queries.append(' '.join(q[i:i + 3]))
+
+                queryResult = booleanQuery(queries)
             else:
-                t.write(' '.join(str(x) for x in queryResult) + '\n')
+                q = data
+                q = q.replace('"', '')
+                q = nltk.word_tokenize(data)
+                q.translate(table)
+                q = [caseFoldigAndStemming(token) for token in q]
+
+                queries = []
+                if len(q) <= 3:
+                    queries.append(' '.join(q))
+                else:
+                    for i in range(len(q) - 2):
+                        queries.append(' '.join(q[i:i + 3]))
+
+                queryResult = booleanQuery(queries)
+                writePostingListToFile(output_file_of_results, queryResult)
