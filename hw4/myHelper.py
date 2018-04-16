@@ -5,7 +5,7 @@ import sys
 import string
 
 
-table = str.maketrans({key: None for key in string.punctuation})
+table = str.maketrans({key: ' ' for key in string.punctuation})
 
 ## get from string.punctuation
 #string_punct = ['!', '"', '#', '$', '%', '&', "'", '(', ')', '*', '+', ',',

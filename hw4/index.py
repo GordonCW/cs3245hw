@@ -9,6 +9,9 @@ import re
 import nltk
 import sys
 import getopt
+import csv
+
+from myHelper import *
 
 
 def usage():
@@ -26,7 +29,7 @@ except getopt.GetoptError as err:
 
 for o, a in opts:
     if o == '-i':  # input directory
-        input_directory = a
+        dataset_file = a
     elif o == '-d':  # dictionary file
         output_file_dictionary = a
     elif o == '-p':  # postings file
@@ -45,7 +48,7 @@ start my code here
 
 sys.setrecursionlimit(25000)
 csv.field_size_limit(100000000)
-TEST_OVER_NO_OF_DOC = 10
+TEST_OVER_NO_OF_DOC = 3
 
 # map colunms name to the index
 colIndex = {}
@@ -182,7 +185,7 @@ with open("terms.txt", mode="w") as f:
         while h != None:
             docIds.append(h.getDocId())
             h = h.getNext()
-        f.write(term+': '+' '.join(str(d) for d in docIds))
+        f.write(term+': '+' '.join(str(d) for d in docIds)+'\n')
 
 # save posting list into posting.txt and then clear the memory used by those
 # posting list
