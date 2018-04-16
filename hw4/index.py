@@ -45,7 +45,7 @@ start my code here
 
 sys.setrecursionlimit(25000)
 csv.field_size_limit(100000000)
-TEST_OVER_NO_OF_DOC = 1
+TEST_OVER_NO_OF_DOC = 10
 
 # map colunms name to the index
 colIndex = {}
@@ -171,6 +171,18 @@ for d in lenOfDocVector:
     lenOfDocVector[d][0] = math.sqrt(lenOfDocVector[d][0])
     lenOfDocVector[d][1] = math.sqrt(lenOfDocVector[d][1])
 
+
+# for testing query later
+with open("terms.txt", mode="w") as f:
+    for term in dic:
+
+        pl = dic[term].getPostingList()
+        h = pl.getHead()
+        docIds = []
+        while h != None:
+            docIds.append(h.getDocId())
+            h = h.getNext()
+        f.write(term+': '+' '.join(str(d) for d in docIds))
 
 # save posting list into posting.txt and then clear the memory used by those
 # posting list
