@@ -117,9 +117,9 @@ with open(dataset_file, newline='') as f:
             for i in range(len(terms)-2):
                 dictList.append((terms[i]+' '+terms[i+1]+' '+terms[i+2], docId))
 
-        # limit the size of corpus for testing - should be commented later
-        if counter == TEST_OVER_NO_OF_DOC:
-            break
+#        # limit the size of corpus for testing - should be commented later
+#        if counter == TEST_OVER_NO_OF_DOC:
+#            break
 
 dictList.sort(key=lambda x: x[0])
 
@@ -187,17 +187,17 @@ for d in lenOfDocVector:
     lenOfDocVector[d][1] = math.sqrt(lenOfDocVector[d][1])
 
 
-# for testing query later
-with open("terms.txt", mode="w") as f:
-    for term in dic:
-
-        pl = dic[term].getPostingList()
-        h = pl.getHead()
-        docIds = []
-        while h != None:
-            docIds.append(h.getDocId())
-            h = h.getNext()
-        f.write('"'+term+'"'+': '+' '.join(str(d) for d in docIds)+'\n')
+## for testing query later
+#with open("terms.txt", mode="w") as f:
+#    for term in dic:
+#
+#        pl = dic[term].getPostingList()
+#        h = pl.getHead()
+#        docIds = []
+#        while h != None:
+#            docIds.append(h.getDocId())
+#            h = h.getNext()
+#        f.write('"'+term+'"'+': '+' '.join(str(d) for d in docIds)+'\n')
 
 # save posting list into posting.txt and then clear the memory used by those
 # posting list
