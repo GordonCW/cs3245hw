@@ -67,7 +67,11 @@ def calculateQueryLogTF(q):
 
     # compute ltf
     for term in tempQueryDic:
-        tempQueryDic[term] = 1 + math.log(tempQueryDic[term], 10)
+        # save time for tf=1
+        if tempQueryDic[term] != 1:
+            tempQueryDic[term] = 1 + math.log(tempQueryDic[term], 10)
+
+        # else do nothing as it already is correct value
 
     return tempQueryDic
 
@@ -77,12 +81,19 @@ def multiplyIDF(tempQueryDic):
         return None
     for term in tempQueryDic:
         # term must be in dic since checked in last function
-        tempQueryDic[term] *= math.log(N / dic[term].getDocFrequency(), 10)
+        if tempQueryDic[term] == 1:
+            # save time
+            tempQueryDic[term] = math.log(N / dic[term].getDocFrequency(), 10)
+        else:
+            tempQueryDic[term] *= math.log(N / dic[term].getDocFrequency(), 10)
 
     return tempQueryDic
 
 
 def cosineScore(q):
+    """
+    q is a list of string where each string is a unigram"""
+
     # compute weighted tf_t,q
     queryDic = calculateQueryLogTF(q)
     queryDic = multiplyIDF(queryDic)
@@ -91,12 +102,14 @@ def cosineScore(q):
     if queryDic == None:
         return None
 
-    # init scores
+    # init scores for every doc
     scores = [[i, None] for i in range(len(docIds))]
 
     # compute dot product
     for term in queryDic:
         # load posting list
+        # term must be in dic
+        # otherwise it is removed in calculateQueryLogTF function
         pl = getPostingList(postings_file, dic[term])
         h = pl.getHead()
 
@@ -105,6 +118,7 @@ def cosineScore(q):
             # retrieve the corresponding index in scores array
             tempDocId = h.getDocId()
             indexInScores = docIdToIndexMap[tempDocId]
+#            print(indexInScores, term, tempDocId, h.getTermFrequency(), queryDic[term])
 
             if scores[indexInScores][1] == None:
                 scores[indexInScores][1] = h.getTermFrequency() * queryDic[term]
@@ -113,19 +127,24 @@ def cosineScore(q):
 
             h = h.getNext()
 
-    # normalize scorse
+#    print(scores)
+    # normalize scorse by the corresponding weighted doc vector length
     for x in scores:
         if x[1] != None:
-            x[1] /= lengthOfDocument[docIds[x[0]]][1]
+            x[1] /= lengthOfDocument[ docIds[x[0]] ][1]
+    
+#    print(scores)
 
     # compute a list of tuple consisting of a nonNone-score docId and its score
     nonzeroScoresList = [(x[0], x[1]) for x in scores if x[1] != None]
+    nonzeroScoresList.sort(key=lambda x: x[1], reverse=True)
+    result = nonzeroScoresList
 
-    result = None
-    if len(nonzeroScoresList) > 10:
-        result = heapq.nlargest(10, nonzeroScoresList, key=lambda x: x[1])
-    else:
-        result = nonzeroScoresList.sort(key=lambda x: x[1], reverse=True)
+    # result = None
+    # if len(nonzeroScoresList) > 10:
+    #     result = heapq.nlargest(10, nonzeroScoresList, key=lambda x: x[1])
+    # else:
+    #     result = nonzeroScoresList.sort(key=lambda x: x[1], reverse=True)
 
     # return the real docIds
     return [docIds[x[0]] for x in result]
@@ -225,8 +244,10 @@ for i in range(len(docIds)):
 # write it back to the result file
 with open(file_of_output, "w", encoding="utf-8") as t:
     with open(file_of_queries, "r", encoding="utf-8") as f:
-        data = f.readlines()
+        data = f.readline()
         queryResult = None
+        
+        print("data is: ", data)
 
         # check if boolean query
         if '"' in data or 'AND' in data:
@@ -234,22 +255,33 @@ with open(file_of_output, "w", encoding="utf-8") as t:
             # for storing preprocessed queries.
             # each element is either a phrase (words separated by a space) or word
             queries = []
+            preprocessResult = []
             if 'AND' in data:
                 qList = data.split('AND')
 
                 # preprocessing
                 for q in qList:
                     q = q.replace('"', '')
-                    q = nltk.word_tokenize(data)
-                    q.translate(table)
+                    q = nltk.word_tokenize(q)
+                    q = [words.translate(table) for words in q]
                     tempQ = []
-                    for word in q.split(' '):
-                        if len(word) > 0:
-                            tempQ.append(word)
+                    for words in q:
+                        for word in words.split(' '):
+                            if len(word) > 0:
+                                tempQ.append(word)
                     q = [caseFoldigAndStemming(token) for token in tempQ]
+                    
+                    # remove strange puntuation
+                    terms = []
+                    for word in q:
+                        if '–' in word or word == '–':
+                            continue
+                        else:
+                            terms.append(word)
+                    preprocessResult.append(terms)
 
                 # join back the processed term for phrase query
-                for q in qList:
+                for q in preprocessResult:
                     if len(q) <= 3:
                         queries.append(' '.join(q))
                     else:
@@ -258,13 +290,23 @@ with open(file_of_output, "w", encoding="utf-8") as t:
             else:
                 q = data
                 q = q.replace('"', '')
-                q = nltk.word_tokenize(data)
-                q.translate(table)
+                q = nltk.word_tokenize(q) # now q is a list
+                q = [words.translate(table) for words in q]
                 tempQ = []
-                for word in q.split(' '):
-                    if len(word) > 0:
-                        tempQ.append(word)
+                for words in q:
+                    for word in words.split(' '):
+                        if len(word) > 0:
+                            tempQ.append(word)
                 q = [caseFoldigAndStemming(token) for token in tempQ]
+                
+                # remove strange puntuation
+                terms = []
+                for word in q:
+                    if '–' in word or word == '–':
+                        continue
+                    else:
+                        terms.append(word)
+                q = terms
 
                 # join back the processed term for phrase query
                 if len(q) <= 3:
@@ -275,24 +317,33 @@ with open(file_of_output, "w", encoding="utf-8") as t:
 
             # execute query
             queryResult = booleanQuery(queries)
-            writePostingListToFile(output_file_of_results, queryResult)
+            writePostingListToFile(t, queryResult)
 
         # if free text query
         else:
 
             # preprocessing
-            q = date.rstrip("\n")
-            q = nltk.word_tokenize(q)
-            q.translate(table)
+            q = nltk.word_tokenize(data) # now q is a list
+            q = [words.translate(table) for words in q]
             tempQ = []
-            for word in q.split(' '):
-                if len(word) > 0:
-                    tempQ.append(word)
+            for words in q:
+                for word in words.split(' '):
+                    if len(word) > 0:
+                        tempQ.append(word)
             q = [caseFoldigAndStemming(token) for token in tempQ]
+            
+            # remove strange puntuation
+            terms = []
+            for word in q:
+                if '–' in word or word == '–':
+                    continue
+                else:
+                    terms.append(word)
+            q = terms
 
             # execute query
             queryResult = cosineScore(q)
             if queryResult == None:
                 t.write('\n')
             else:
-                t.write(' '.join(str(x) for x in queryResult) + '\n')
+                t.write(' '.join(str(d) for d in queryResult) + '\n')

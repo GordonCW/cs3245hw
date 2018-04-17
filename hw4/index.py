@@ -6,8 +6,6 @@ Created on Sun Apr 15 15:07:11 2018
 @author: weiqing
 """
 import re
-import nltk
-import sys
 import getopt
 import csv
 
@@ -45,7 +43,6 @@ if dataset_file == None or output_file_postings == None or output_file_dictionar
 start my code here
 """
 
-
 sys.setrecursionlimit(25000)
 csv.field_size_limit(100000000)
 TEST_OVER_NO_OF_DOC = 3
@@ -56,6 +53,7 @@ dictList = []
 
 # our final dictionary
 dic = {}
+contentForTesting = []
 with open(dataset_file, newline='') as f:
     # [17153 rows x 5 columns]
     reader = csv.reader(f)
@@ -84,7 +82,40 @@ with open(dataset_file, newline='') as f:
             else:
                 docContent = contentSplit[0]
 
-        putDocIntoList(dictList, docContent, docId)
+        contentForTesting.append(docContent)
+        
+        tokens = []
+        
+        # tokenize and remove all puntuations in the content
+        for words in nltk.word_tokenize(docContent):
+            words = words.translate(table)
+            for word in words.split(' '):
+                if len(word) > 0:
+                    tokens.append(word)
+        
+        # casefolding and stemming
+        initTerms = [caseFoldigAndStemming(token) for token in tokens]
+        terms = []
+        for term in initTerms:
+            if '–' in term or term == '–':
+                continue
+            else:
+                terms.append(term)
+#        terms = initTerms
+    
+        # add unigram into dictList
+        for term in terms:
+            dictList.append((term, docId))
+        
+        # add bigram into dictList
+        if len(terms) >= 2:
+            for i in range(len(terms)-1):
+                dictList.append((terms[i]+' '+terms[i+1], docId))
+        
+        # add trigram into dictList
+        if len(terms) >= 3:
+            for i in range(len(terms)-2):
+                dictList.append((terms[i]+' '+terms[i+1]+' '+terms[i+2], docId))
 
         # limit the size of corpus for testing - should be commented later
         if counter == TEST_OVER_NO_OF_DOC:
@@ -93,7 +124,9 @@ with open(dataset_file, newline='') as f:
 dictList.sort(key=lambda x: x[0])
 
 
-# print(dictList)
+#for content in contentForTesting:
+#    print([content])
+#    print()
 
 
 # step 6
@@ -154,17 +187,17 @@ for d in lenOfDocVector:
     lenOfDocVector[d][1] = math.sqrt(lenOfDocVector[d][1])
 
 
-## for testing query later
-#with open("terms.txt", mode="w") as f:
-#    for term in dic:
-#
-#        pl = dic[term].getPostingList()
-#        h = pl.getHead()
-#        docIds = []
-#        while h != None:
-#            docIds.append(h.getDocId())
-#            h = h.getNext()
-#        f.write('"'+term+'"'+': '+' '.join(str(d) for d in docIds)+'\n')
+# for testing query later
+with open("terms.txt", mode="w") as f:
+    for term in dic:
+
+        pl = dic[term].getPostingList()
+        h = pl.getHead()
+        docIds = []
+        while h != None:
+            docIds.append(h.getDocId())
+            h = h.getNext()
+        f.write('"'+term+'"'+': '+' '.join(str(d) for d in docIds)+'\n')
 
 # save posting list into posting.txt and then clear the memory used by those
 # posting list
