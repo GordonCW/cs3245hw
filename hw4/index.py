@@ -74,6 +74,7 @@ with open(dataset_file, newline='') as f:
         docId = int(row[colIndex['document_id']])
         docContent = row[colIndex['content']]
 
+        # remove the junk in the content
         if '//<!\[' in docContent:
             contentSplit = docContent.split('//<![', 1)
             if len(contentSplit[0]) == 0:
@@ -83,31 +84,9 @@ with open(dataset_file, newline='') as f:
             else:
                 docContent = contentSplit[0]
 
-        # remove puntuation, tokenizing, case folding and stemming
-        tokens = [word for word in nltk.word_tokenize(docContent.translate(table))]
-        initTerms = [caseFoldigAndStemming(token) for token in tokens]
-        terms = []
-        for term in initTerms:
-            if "–" in term or term == '—':
-                continue
-            else:
-                terms.append(term)
+        putDocIntoList(dictList, docContent, docId)
 
-        # add unigram into lis
-        for term in terms:
-            dictList.append((term, docId))
-
-        # add bigram into lis
-        if len(terms) >= 2:
-            for i in range(len(terms) - 1):
-                dictList.append((terms[i] + ' ' + terms[i + 1], docId))
-
-        # add trigram into lis
-        if len(terms) >= 3:
-            for i in range(len(terms) - 2):
-                dictList.append((terms[i] + ' ' + terms[i + 1] + ' ' + terms[i + 2], docId))
-
-        # limit the size of corpus for testing
+        # limit the size of corpus for testing - should be commented later
         if counter == TEST_OVER_NO_OF_DOC:
             break
 

@@ -227,39 +227,72 @@ with open(file_of_output, "w", encoding="utf-8") as t:
     with open(file_of_queries, "r", encoding="utf-8") as f:
         data = f.readlines()
         queryResult = None
-        if '"' in data or "AND" in data:
-            if "AND" in data:
-                qList = data.split("AND")
 
-                # preprocess
+        # check if boolean query
+        if '"' in data or 'AND' in data:
+
+            # for storing preprocessed queries.
+            # each element is either a phrase (words separated by a space) or word
+            queries = []
+            if 'AND' in data:
+                qList = data.split('AND')
+
+                # preprocessing
                 for q in qList:
                     q = q.replace('"', '')
                     q = nltk.word_tokenize(data)
                     q.translate(table)
-                    q = [caseFoldigAndStemming(token) for token in q]
+                    tempQ = []
+                    for word in q.split(' '):
+                        if len(word) > 0:
+                            tempQ.append(word)
+                    q = [caseFoldigAndStemming(token) for token in tempQ]
 
-                queries = []
+                # join back the processed term for phrase query
                 for q in qList:
                     if len(q) <= 3:
                         queries.append(' '.join(q))
                     else:
                         for i in range(len(q) - 2):
                             queries.append(' '.join(q[i:i + 3]))
-
-                queryResult = booleanQuery(queries)
             else:
                 q = data
                 q = q.replace('"', '')
                 q = nltk.word_tokenize(data)
                 q.translate(table)
-                q = [caseFoldigAndStemming(token) for token in q]
+                tempQ = []
+                for word in q.split(' '):
+                    if len(word) > 0:
+                        tempQ.append(word)
+                q = [caseFoldigAndStemming(token) for token in tempQ]
 
-                queries = []
+                # join back the processed term for phrase query
                 if len(q) <= 3:
                     queries.append(' '.join(q))
                 else:
                     for i in range(len(q) - 2):
                         queries.append(' '.join(q[i:i + 3]))
 
-                queryResult = booleanQuery(queries)
-                writePostingListToFile(output_file_of_results, queryResult)
+            # execute query
+            queryResult = booleanQuery(queries)
+            writePostingListToFile(output_file_of_results, queryResult)
+
+        # if free text query
+        else:
+
+            # preprocessing
+            q = date.rstrip("\n")
+            q = nltk.word_tokenize(q)
+            q.translate(table)
+            tempQ = []
+            for word in q.split(' '):
+                if len(word) > 0:
+                    tempQ.append(word)
+            q = [caseFoldigAndStemming(token) for token in tempQ]
+
+            # execute query
+            queryResult = cosineScore(q)
+            if queryResult == None:
+                t.write('\n')
+            else:
+                t.write(' '.join(str(x) for x in queryResult) + '\n')

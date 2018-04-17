@@ -21,20 +21,22 @@ special_term = "ALL_DOC_ID"
 def putDocIntoList(lis, docContent, docId):
     tokens = []
     
-    # tokenize
+    # tokenize and remove all puntuations in the content
     for words in nltk.word_tokenize(docContent):
         words.translate(table)
         for word in words.split(' '):
-            tokens.append(word)
-        
-    tokens = [word for word in nltk.word_tokenize(docContent)]
+            if len(word) > 0:
+                tokens.append(word)
+    
+    # casefolding and stemming
     initTerms = [caseFoldigAndStemming(token) for token in tokens]
-    terms = []
-    for term in initTerms:
-        if "–" in term or term == '—':
-            continue
-        else:
-            terms.append(term)
+    # terms = []
+    # for term in initTerms:
+    #     if "–" in term or term == '—':
+    #         continue
+    #     else:
+    #         terms.append(term)
+    terms = initTerms
 
     # add unigram into lis
     for term in terms:
