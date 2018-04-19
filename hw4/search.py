@@ -255,7 +255,7 @@ with open(file_of_output, "w", encoding="utf-8") as t:
                     # remove strange puntuation
                     terms = []
                     for word in q:
-                        if '–' in word or word == '–':
+                        if '–' in word or word == '–' or word in stopwords:
                             continue
                         else:
                             terms.append(word)
@@ -283,7 +283,7 @@ with open(file_of_output, "w", encoding="utf-8") as t:
                 # remove strange puntuation
                 terms = []
                 for word in q:
-                    if '–' in word or word == '–':
+                    if '–' in word or word == '–' or word in stopwords:
                         continue
                     else:
                         terms.append(word)
@@ -318,7 +318,7 @@ with open(file_of_output, "w", encoding="utf-8") as t:
             # remove strange puntuation
             terms = []
             for word in q:
-                if '–' in word or word == '–':
+                if '–' in word or word == '–' or word in stopwords:
                     continue
                 else:
                     terms.append(word)

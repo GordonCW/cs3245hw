@@ -6,7 +6,7 @@ import string
 
 
 table = str.maketrans({key: ' ' for key in string.punctuation})
-
+stopwords = set(nltk.corpus.stopwords.words('english'))
 ## get from string.punctuation
 #string_punct = ['!', '"', '#', '$', '%', '&', "'", '(', ')', '*', '+', ',',
 #                '-', '.', '/', ':', ';', '<', '=', '>', '?', '@', '[', '\\',

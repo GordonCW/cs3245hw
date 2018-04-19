@@ -103,7 +103,7 @@ with open(dataset_file, newline='', encoding="utf-8") as f:
         initTerms = [caseFoldigAndStemming(token) for token in tokens]
         unigramTerms = []
         for term in initTerms:
-            if '–' in term or term == '–':
+            if '–' in term or term == '–' or term in stopwords:
                 continue
             else:
                 unigramTerms.append(term)
