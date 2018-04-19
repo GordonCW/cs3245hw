@@ -8,6 +8,7 @@ Created on Sun Apr 15 15:07:11 2018
 import re
 import getopt
 import csv
+from collections import Counter
 
 from myHelper import *
 
@@ -49,17 +50,23 @@ TEST_OVER_NO_OF_DOC = 3
 
 # map colunms name to the index
 colIndex = {}
-dictList = []
 
-# our final dictionary
+"""
+our final dictionary
+key is term
+value is a list of list
+where the first entry is doc frequency
+the second is a list of tuple in the form of (docId, tf)
+"""
 dic = {}
-contentForTesting = []
-with open(dataset_file, newline='') as f:
+#contentForTesting = []
+with open(dataset_file, newline='', encoding="utf-8") as f:
     # [17153 rows x 5 columns]
     reader = csv.reader(f)
 
     # skip header
     header = next(reader)
+#    print(header)
 
     # map colunms name to the index
     for i in range(len(header)):
@@ -82,11 +89,10 @@ with open(dataset_file, newline='') as f:
             else:
                 docContent = contentSplit[0]
 
-        contentForTesting.append(docContent)
-        
-        tokens = []
+#        contentForTesting.append(docContent)
         
         # tokenize and remove all puntuations in the content
+        tokens = []
         for words in nltk.word_tokenize(docContent):
             words = words.translate(table)
             for word in words.split(' '):
@@ -95,91 +101,58 @@ with open(dataset_file, newline='') as f:
         
         # casefolding and stemming
         initTerms = [caseFoldigAndStemming(token) for token in tokens]
-        terms = []
+        unigramTerms = []
         for term in initTerms:
             if '–' in term or term == '–':
                 continue
             else:
-                terms.append(term)
-#        terms = initTerms
-    
-        # add unigram into dictList
+                unigramTerms.append(term)
+
+        otherTerms = []
+        
+        # add bigram
+        if len(unigramTerms) >= 2:
+            for i in range(len(unigramTerms)-1):
+                otherTerms.append(unigramTerms[i]+' '+unigramTerms[i+1])
+        
+        # add trigram into dic
+        if len(unigramTerms) >= 3:
+            for i in range(len(unigramTerms)-2):
+                otherTerms.append(unigramTerms[i]+' '+unigramTerms[i+1]+' '+\
+                    unigramTerms[i+2])
+
+        terms = Counter(unigramTerms)
+        terms.update(otherTerms)
+
         for term in terms:
-            dictList.append((term, docId))
-        
-        # add bigram into dictList
-        if len(terms) >= 2:
-            for i in range(len(terms)-1):
-                dictList.append((terms[i]+' '+terms[i+1], docId))
-        
-        # add trigram into dictList
-        if len(terms) >= 3:
-            for i in range(len(terms)-2):
-                dictList.append((terms[i]+' '+terms[i+1]+' '+terms[i+2], docId))
+            # weighted
+            w = 1 + math.log(terms[term], 10)
+            if term not in dic:
+                dic[term] = [1, [(docId, w)]]
+            else:
+                dic[term][0] += 1
+                dic[term][1].append( (docId, w) )
 
 #        # limit the size of corpus for testing - should be commented later
 #        if counter == TEST_OVER_NO_OF_DOC:
-#            break
-
-dictList.sort(key=lambda x: x[0])
+#           break
 
 
-#for content in contentForTesting:
-#    print([content])
-#    print()
-
-
-# step 6
-# for each term and document, compute the tf
-for term, docId in dictList:
-
-    if term not in dic:
-        dic[term] = DicValue(PostingList(Node(docId)))
-    else:
-        # exist in the dic
-        currNode = dic[term].getPostingList().getCurrentNode()
-        previousDocId = currNode.getDocId()
-
-        # different docId
-        if previousDocId != docId:
-            dic[term].getPostingList().add(Node(docId))
-            dic[term].addOneDoc()
-        else:
-            currNode.incrementTermFrequency()
-
-
-# step 7
-# pre compute log term frequency for searching later
-for term in dic:
-    pl = dic[term].getPostingList()
-    h = pl.getHead()
-
-    # iterate through the posting list
-    while h != None:
-        h.calculateLogTF()
-        h = h.getNext()
-
-
-# step 8
 # pre compute the document vector length for searching later
 # value is a list. the first one consider all term in dic
 # the second one consider only unigram in dic
 lenOfDocVector = {}
 for term in dic:
-    pl = dic[term].getPostingList()
-    h = pl.getHead()
-    while h != None:
-        docId = h.getDocId()
-        squaredTF = h.getTermFrequency() * h.getTermFrequency()
+    for docId, w_tf in dic[term][1]:
+        squared = w_tf * w_tf
         if docId not in lenOfDocVector:
-            lenOfDocVector[docId] = [squaredTF, 0]
+            lenOfDocVector[docId] = [squared, 0]
         else:
-            lenOfDocVector[docId][0] += squaredTF
+            lenOfDocVector[docId][0] += squared
 
         # check if it is unigram
         if ' ' not in term:
-            lenOfDocVector[docId][1] += squaredTF
-        h = h.getNext()
+            lenOfDocVector[docId][1] += squared
 
 # computer entry-wise sqrt for lenOfDocVector
 for d in lenOfDocVector:
@@ -187,33 +160,22 @@ for d in lenOfDocVector:
     lenOfDocVector[d][1] = math.sqrt(lenOfDocVector[d][1])
 
 
-## for testing query later
-#with open("terms.txt", mode="w") as f:
-#    for term in dic:
-#
-#        pl = dic[term].getPostingList()
-#        h = pl.getHead()
-#        docIds = []
-#        while h != None:
-#            docIds.append(h.getDocId())
-#            h = h.getNext()
-#        f.write('"'+term+'"'+': '+' '.join(str(d) for d in docIds)+'\n')
-
 # save posting list into posting.txt and then clear the memory used by those
 # posting list
 with open(output_file_postings, mode="wb") as f:
 
     byte_count = 0
     for term in dic:
-        postingList = dic[term].getPostingList()
+        postingList = dic[term][1]
         encodedList = pickle.dumps(postingList)
         f.write(encodedList)
 
         # location of posting list and how many bytes to save it
-        dic[term].setPointer((byte_count, len(encodedList)))
+        pointer = (byte_count, len(encodedList))
         byte_count += len(encodedList)
 
-        dic[term].setPostingList(None)
+        # the second element change from a posting list to a pointer
+        dic[term][1] = pointer
 
 # save dic into dictionary.txt
 with open(output_file_dictionary, mode="wb") as f:

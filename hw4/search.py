@@ -83,9 +83,9 @@ def multiplyIDF(tempQueryDic):
         # term must be in dic since checked in last function
         if tempQueryDic[term] == 1:
             # save time
-            tempQueryDic[term] = math.log(N / dic[term].getDocFrequency(), 10)
+            tempQueryDic[term] = math.log(N / dic[term][0], 10)
         else:
-            tempQueryDic[term] *= math.log(N / dic[term].getDocFrequency(), 10)
+            tempQueryDic[term] *= math.log(N / dic[term][0], 10)
 
     return tempQueryDic
 
@@ -111,29 +111,21 @@ def cosineScore(q):
         # term must be in dic
         # otherwise it is removed in calculateQueryLogTF function
         pl = getPostingList(postings_file, dic[term])
-        h = pl.getHead()
-
-        # iterate through the posting list
-        while h != None:
+        
+        for tempDocId, w_tf in pl:
             # retrieve the corresponding index in scores array
-            tempDocId = h.getDocId()
             indexInScores = docIdToIndexMap[tempDocId]
 #            print(indexInScores, term, tempDocId, h.getTermFrequency(), queryDic[term])
 
             if scores[indexInScores][1] == None:
-                scores[indexInScores][1] = h.getTermFrequency() * queryDic[term]
+                scores[indexInScores][1] = w_tf * queryDic[term]
             else:
-                scores[indexInScores][1] += h.getTermFrequency() * queryDic[term]
+                scores[indexInScores][1] += w_tf * queryDic[term]
 
-            h = h.getNext()
-
-#    print(scores)
     # normalize scorse by the corresponding weighted doc vector length
     for x in scores:
         if x[1] != None:
             x[1] /= lengthOfDocument[ docIds[x[0]] ][1]
-    
-#    print(scores)
 
     # compute a list of tuple consisting of a nonNone-score docId and its score
     nonzeroScoresList = [(x[0], x[1]) for x in scores if x[1] != None]
@@ -151,46 +143,31 @@ def cosineScore(q):
 
 
 def AND(postingList1, postingList2):
-    if postingList1 == None or postingList2 == None:
-        return None
-    result = None
-    p1 = postingList1.getHead()
-    p2 = postingList2.getHead()
-    while p1 != None and p2 != None:
-        if p1.getDocId() == p2.getDocId():
+    print(postingList1)
+    print(postingList2)
+    if len(postingList1) == 0 or len(postingList2) == 0:
+        return []
+    result = []
 
-            if result == None:
-                result = PostingList(Node(p1.getDocId()))
-            else:
-                result.add(Node(p1.getDocId()))
-            p1 = p1.getNext()
-            p2 = p2.getNext()
+    i1 = 0
+    i2 = 0
+    p1Length = len(postingList1)
+    p2Length = len(postingList2)
+    while i1 < p1Length and i2 < p2Length:
+        p1DocId = postingList1[i1]
+        p2DocId = postingList2[i2]
+        if p1DocId == p2DocId:
+            result.append(p1DocId)
+            i1 += 1
+            i2 += 1
 
-        elif p1.getDocId() < p2.getDocId():
-
-            if p1.getSkipNext() != None:
-                tempP = p1.getSkipNext()
-
-                # use skip pointer if the order is preserved
-                if tempP.getDocId() <= p2.getDocId():
-                    p1 = tempP
-                else:
-                    p1 = p1.getNext()
-            else:
-                p1 = p1.getNext()
+        elif p1DocId < p2DocId:
+            # later can implement skip pointer for p1
+            i1 += 1
 
         else:
-
-            if p2.getSkipNext() != None:
-                tempP = p2.getSkipNext()
-
-                # use skip pointer if the order is preserved
-                if tempP.getDocId() <= p1.getDocId():
-                    p2 = tempP
-                else:
-                    p2 = p2.getNext()
-            else:
-                p2 = p2.getNext()
+            # later can implement skip pointer for p2
+            i2 += 1
 
     return result
 
@@ -215,6 +192,10 @@ def booleanQuery(query):
                 postings.append(posting)
             else:
                 return None
+    
+    # get rid of the second entry of each tuple which is tf
+    for i in range(len(postings)):
+        postings[i] = [x[0] for x in postings[i]]
 
     result = AND(postings[0], postings[1])
     for p in postings[2:]:
@@ -316,8 +297,10 @@ with open(file_of_output, "w", encoding="utf-8") as t:
                         queries.append(' '.join(q[i:i + 3]))
 
             # execute query
+#            print(queries)
             queryResult = booleanQuery(queries)
             writePostingListToFile(t, queryResult)
+            print(queryResult)
 
         # if free text query
         else:
@@ -341,6 +324,7 @@ with open(file_of_output, "w", encoding="utf-8") as t:
                     terms.append(word)
             q = terms
 
+#            print(q)
             # execute query
             queryResult = cosineScore(q)
             if queryResult == None:
