@@ -177,7 +177,7 @@ def booleanQuery(query):
         return None
     elif len(query) == 1:
         if query[0] in dic:
-            return getPostingList(postings_file, dic[query[0]])
+            return [ x[0] for x in getPostingList(postings_file, dic[query[0]]) ]
         else:
             return None
 
@@ -189,13 +189,11 @@ def booleanQuery(query):
         else:
             posting = getPostingList(postings_file, dic[term])
             if posting != None:
+                # get rid of the second entry of each tuple which is tf
+                posting = [x[0] for x in posting]
                 postings.append(posting)
             else:
                 return None
-    
-    # get rid of the second entry of each tuple which is tf
-    for i in range(len(postings)):
-        postings[i] = [x[0] for x in postings[i]]
 
     result = AND(postings[0], postings[1])
     for p in postings[2:]:
@@ -259,14 +257,19 @@ with open(file_of_output, "w", encoding="utf-8") as t:
                         else:
                             terms.append(word)
                     preprocessResult.append(terms)
+                print(preprocessResult)
 
-                # join back the processed term for phrase query
+                # # join back the processed term for phrase query
+                # for q in preprocessResult:
+                #     if len(q) <= 3:
+                #         queries.append(' '.join(q))
+                #     else:
+                #         for i in range(len(q) - 2):
+                #             queries.append(' '.join(q[i:i + 3]))
+
                 for q in preprocessResult:
-                    if len(q) <= 3:
-                        queries.append(' '.join(q))
-                    else:
-                        for i in range(len(q) - 2):
-                            queries.append(' '.join(q[i:i + 3]))
+                    for word in q:
+                        queries.append(word)
             else:
                 q = data
                 q = nltk.word_tokenize(q) # now q is a list
@@ -285,19 +288,19 @@ with open(file_of_output, "w", encoding="utf-8") as t:
                         continue
                     else:
                         terms.append(word)
-                q = terms
+                queries = terms
+                # q = terms
 
-                # join back the processed term for phrase query
-                if len(q) <= 3:
-                    queries.append(' '.join(q))
-                else:
-                    for i in range(len(q) - 2):
-                        queries.append(' '.join(q[i:i + 3]))
+                # # join back the processed term for phrase query
+                # if len(q) <= 3:
+                #     queries.append(' '.join(q))
+                # else:
+                #     for i in range(len(q) - 2):
+                #         queries.append(' '.join(q[i:i + 3]))
 
             # execute query
-            # print(queries)
+            print(queries)
             queryResult = booleanQuery(queries)
-            writePostingListToFile(t, queryResult)
 
         # if free text query
         else:
@@ -321,10 +324,15 @@ with open(file_of_output, "w", encoding="utf-8") as t:
                     terms.append(word)
             q = terms
 
-#            print(q)
+            print(q)
             # execute query
             queryResult = cosineScore(q)
-            if queryResult == None:
-                t.write('\n')
-            else:
-                t.write(' '.join(str(d) for d in queryResult) + '\n')
+
+
+        # print(queryResult)
+        # if queryResult != None:
+        #     print(len(queryResult))
+        if queryResult == None:
+            t.write('\n')
+        else:
+            t.write(' '.join(str(d) for d in queryResult) + '\n')
