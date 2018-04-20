@@ -143,8 +143,8 @@ def cosineScore(q):
 
 
 def AND(postingList1, postingList2):
-    print(postingList1)
-    print(postingList2)
+    # print(postingList1)
+    # print(postingList2)
     if len(postingList1) == 0 or len(postingList2) == 0:
         return []
     result = []
@@ -242,7 +242,6 @@ with open(file_of_output, "w", encoding="utf-8") as t:
 
                 # preprocessing
                 for q in qList:
-                    q = q.replace('"', '')
                     q = nltk.word_tokenize(q)
                     q = [words.translate(table) for words in q]
                     tempQ = []
@@ -270,7 +269,6 @@ with open(file_of_output, "w", encoding="utf-8") as t:
                             queries.append(' '.join(q[i:i + 3]))
             else:
                 q = data
-                q = q.replace('"', '')
                 q = nltk.word_tokenize(q) # now q is a list
                 q = [words.translate(table) for words in q]
                 tempQ = []
@@ -297,10 +295,9 @@ with open(file_of_output, "w", encoding="utf-8") as t:
                         queries.append(' '.join(q[i:i + 3]))
 
             # execute query
-#            print(queries)
+            # print(queries)
             queryResult = booleanQuery(queries)
             writePostingListToFile(t, queryResult)
-            print(queryResult)
 
         # if free text query
         else:

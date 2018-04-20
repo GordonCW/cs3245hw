@@ -108,21 +108,21 @@ with open(dataset_file, newline='', encoding="utf-8") as f:
             else:
                 unigramTerms.append(term)
 
-        otherTerms = []
+#        otherTerms = []
         
-        # add bigram
-        if len(unigramTerms) >= 2:
-            for i in range(len(unigramTerms)-1):
-                otherTerms.append(unigramTerms[i]+' '+unigramTerms[i+1])
-        
-        # add trigram into dic
-        if len(unigramTerms) >= 3:
-            for i in range(len(unigramTerms)-2):
-                otherTerms.append(unigramTerms[i]+' '+unigramTerms[i+1]+' '+\
-                    unigramTerms[i+2])
+#        # add bigram
+#        if len(unigramTerms) >= 2:
+#            for i in range(len(unigramTerms)-1):
+#                otherTerms.append(unigramTerms[i]+' '+unigramTerms[i+1])
+#        
+#        # add trigram into dic
+#        if len(unigramTerms) >= 3:
+#            for i in range(len(unigramTerms)-2):
+#                otherTerms.append(unigramTerms[i]+' '+unigramTerms[i+1]+' '+\
+#                    unigramTerms[i+2])
 
         terms = Counter(unigramTerms)
-        terms.update(otherTerms)
+#        terms.update(otherTerms)
 
         for term in terms:
             # weighted
