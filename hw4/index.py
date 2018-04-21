@@ -1,10 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Created on Sun Apr 15 15:07:11 2018
-
-@author: weiqing
-"""
 import re
 import getopt
 import csv

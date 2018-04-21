@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import nltk
 import pickle
 import math
