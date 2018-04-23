@@ -5,6 +5,8 @@ import nltk
 import sys
 import getopt
 
+from queryExpansion import *
+
 
 def usage():
     print("usage: " + sys.argv[0] +
@@ -239,26 +241,56 @@ with open(file_of_output, "w", encoding="utf-8") as t:
             if 'AND' in data:
                 qList = data.split('AND')
 
-                # preprocessing
-                for q in qList:
+                # query expansion
+                expansion = []
+                for q in qList:  # q is "a phrase" or keyword
                     q = nltk.word_tokenize(q)
-                    q = [words.translate(table) for words in q]
-                    tempQ = []
-                    for words in q:
-                        for word in words.split(' '):
-                            if len(word) > 0:
-                                tempQ.append(word)
-                    q = [caseFoldigAndStemming(token) for token in tempQ]
-                    
-                    # remove strange puntuation
-                    terms = []
+
+                    expansion += q
                     for word in q:
-                        if '–' in word or word == '–' or word in stopwords:
-                            continue
-                        else:
-                            terms.append(word)
-                    preprocessResult.append(terms)
-                print(preprocessResult)
+                        expansion += expandOneWord(word)
+                    # print("expansion query words: ", expansion)
+
+                qList = expansion
+
+                q = [words.translate(table) for words in qList]
+                tempQ = []
+                for words in q:
+                    for word in words.split(' '):
+                        if len(word) > 0:
+                            tempQ.append(word)
+                q = [caseFoldigAndStemming(token) for token in tempQ]
+                
+                # remove strange puntuation
+                terms = []
+                for word in q:
+                    if '–' in word or word == '–' or word in stopwords:
+                        continue
+                    else:
+                        terms.append(word)
+                queries = terms
+
+
+                # # preprocessing
+                # for q in qList:     
+                #     q = nltk.word_tokenize(q)
+                #     q = [words.translate(table) for words in q]
+                #     tempQ = []
+                #     for words in q:
+                #         for word in words.split(' '):
+                #             if len(word) > 0:
+                #                 tempQ.append(word)
+                #     q = [caseFoldigAndStemming(token) for token in tempQ]
+                    
+                #     # remove strange puntuation
+                #     terms = []
+                #     for word in q:
+                #         if '–' in word or word == '–' or word in stopwords:
+                #             continue
+                #         else:
+                #             terms.append(word)
+                #     preprocessResult.append(terms)
+                # print(preprocessResult)
 
                 # # join back the processed term for phrase query
                 # for q in preprocessResult:
@@ -268,12 +300,20 @@ with open(file_of_output, "w", encoding="utf-8") as t:
                 #         for i in range(len(q) - 2):
                 #             queries.append(' '.join(q[i:i + 3]))
 
-                for q in preprocessResult:
-                    for word in q:
-                        queries.append(word)
+                # for q in preprocessResult:
+                #     for word in q:
+                #         queries.append(word)
             else:
                 q = data
                 q = nltk.word_tokenize(q) # now q is a list
+
+                # query expansion
+                expansion = []
+                for word in q:
+                    expansion += expandOneWord(word)
+                # print("expansion query words: ", expansion)
+                q += expansion
+
                 q = [words.translate(table) for words in q]
                 tempQ = []
                 for words in q:
@@ -299,15 +339,27 @@ with open(file_of_output, "w", encoding="utf-8") as t:
                 #     for i in range(len(q) - 2):
                 #         queries.append(' '.join(q[i:i + 3]))
 
+            # remove duplicates
+            queries = set(queries)
+            queries = list(queries)
             # execute query
-            print(queries)
-            queryResult = booleanQuery(queries)
+            print("final q:", queries)
+            # queryResult = booleanQuery(queries)
+            queryResult = cosineScore(queries)
 
         # if free text query
         else:
 
             # preprocessing
             q = nltk.word_tokenize(data) # now q is a list
+
+            # query expansion
+            expansion = []
+            for word in q:
+                expansion += expandOneWord(word)
+            # print("expansion query words: ", expansion)
+            q += expansion
+
             q = [words.translate(table) for words in q]
             tempQ = []
             for words in q:
@@ -325,7 +377,12 @@ with open(file_of_output, "w", encoding="utf-8") as t:
                     terms.append(word)
             q = terms
 
-            print(q)
+
+            # remove duplicates
+            queries = set(queries)
+            queries = list(queries)
+            print("final q:", q)
+            # print("expansion: ", queryExpansion(q))
             # execute query
             queryResult = cosineScore(q)
 

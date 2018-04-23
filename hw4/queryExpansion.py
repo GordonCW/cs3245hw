@@ -14,7 +14,7 @@ from nltk.stem import WordNetLemmatizer
 
 #termQ = ["word","hello"]
 
-def queryExpansion(self, query):
+def queryExpansion(query):
     termQ = query
     newList =[]
       
@@ -45,3 +45,23 @@ def queryExpansion(self, query):
     
     #print(newList)
     return newList
+
+def expandOneWord(word):
+    result = []
+    partOfSpeech = ['a', 'r', 'n', 'v']
+
+    for pos in partOfSpeech:
+
+        # find syn with pos
+        synL = wn.synsets(word, pos)
+        if len(synL) > 2:
+            synL = synL[:2]
+        for syn in synL:
+            for word in syn.lemma_names():
+                if '_' not in word:
+                    result.append(word.lower())
+
+    result = set(result)
+    result = list(result)
+    # print("expanded query for", word, "is :", result)
+    return result
