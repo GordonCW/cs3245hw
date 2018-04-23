@@ -48,14 +48,14 @@ def queryExpansion(query):
 
 def expandOneWord(word):
     result = []
-    partOfSpeech = ['a', 'r', 'n', 'v']
+    partOfSpeech = ['a', 'n', 'v']
 
     for pos in partOfSpeech:
 
         # find syn with pos
         synL = wn.synsets(word, pos)
-        if len(synL) > 2:
-            synL = synL[:2]
+        if len(synL) > 1:
+            synL = synL[:1]
         for syn in synL:
             for word in syn.lemma_names():
                 if '_' not in word:
