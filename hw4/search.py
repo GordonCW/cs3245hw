@@ -248,8 +248,8 @@ with open(file_of_output, "w", encoding="utf-8") as t:
 
                     # expansion += q
                     for word in q:
-                        expansion += expandOneWord(word)
-                    # print("expansion query words: ", expansion)
+                        # expansion += expandOneWord(word)
+                        expansion.append(word)
 
                 qList = expansion
 
@@ -310,7 +310,8 @@ with open(file_of_output, "w", encoding="utf-8") as t:
                 # query expansion
                 expansion = []
                 for word in q:
-                    expansion += expandOneWord(word)
+                    # expansion += expandOneWord(word)
+                    expansion.append(word)
                 # print("expansion query words: ", expansion)
                 q = expansion
 
@@ -356,7 +357,8 @@ with open(file_of_output, "w", encoding="utf-8") as t:
             # query expansion
             expansion = []
             for word in q:
-                expansion += expandOneWord(word)
+                # expansion += expandOneWord(word)
+                expansion.append(word)
             # print("expansion query words: ", expansion)
             q = expansion
 
@@ -392,7 +394,7 @@ with open(file_of_output, "w", encoding="utf-8") as t:
         if queryResult != None:
             print("number of result: ", len(queryResult))
 
-            # # evaluate score
+            # evaluate score
             # # q1
             # required = [6807771, 4001247, 3992148]
 
