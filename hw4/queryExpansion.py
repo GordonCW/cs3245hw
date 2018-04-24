@@ -9,8 +9,7 @@ Created on Fri Apr 20 00:22:50 2018
 import nltk
 from nltk.corpus.reader.wordnet import NOUN
 from nltk.corpus import wordnet as wn
-from nltk.stem import WordNetLemmatizer 
-    
+from nltk.stem import WordNetLemmatizer    
 
 #termQ = ["word","hello"]
 
@@ -46,22 +45,33 @@ def queryExpansion(query):
     #print(newList)
     return newList
 
-def expandOneWord(word):
+def expandOneWord(qWord):
     result = []
-    partOfSpeech = ['a', 'n', 'v']
+    # partOfSpeech = ['a', 'n', 'v']
+    partOfSpeech = ['n', 'v']
+
+    # remove adj
+    if wn.morphy(qWord, 'a') != None:
+        return []
+                    
 
     for pos in partOfSpeech:
+        antonyms = []
 
         # find syn with pos
-        synL = wn.synsets(word, pos)
+        synL = wn.synsets(qWord, pos)
         if len(synL) > 1:
             synL = synL[:1]
         for syn in synL:
-            for word in syn.lemma_names():
-                if '_' not in word:
-                    result.append(word.lower())
+            for word in syn.lemmas():
+                if '_' not in word.name():
+                    result.append(word.name().lower())
 
+    # remove dulplicates
     result = set(result)
     result = list(result)
-    # print("expanded query for", word, "is :", result)
+    # print("qWord:", qWord)
+    # print(result, '\n')
+    # add the origin query word
+    result.append(qWord)
     return result

@@ -246,7 +246,7 @@ with open(file_of_output, "w", encoding="utf-8") as t:
                 for q in qList:  # q is "a phrase" or keyword
                     q = nltk.word_tokenize(q)
 
-                    expansion += q
+                    # expansion += q
                     for word in q:
                         expansion += expandOneWord(word)
                     # print("expansion query words: ", expansion)
@@ -312,7 +312,7 @@ with open(file_of_output, "w", encoding="utf-8") as t:
                 for word in q:
                     expansion += expandOneWord(word)
                 # print("expansion query words: ", expansion)
-                q += expansion
+                q = expansion
 
                 q = [words.translate(table) for words in q]
                 tempQ = []
@@ -358,7 +358,7 @@ with open(file_of_output, "w", encoding="utf-8") as t:
             for word in q:
                 expansion += expandOneWord(word)
             # print("expansion query words: ", expansion)
-            q += expansion
+            q = expansion
 
             q = [words.translate(table) for words in q]
             tempQ = []
@@ -379,17 +379,37 @@ with open(file_of_output, "w", encoding="utf-8") as t:
 
 
             # remove duplicates
-            queries = set(queries)
-            queries = list(queries)
+            q = set(q)
+            q = list(q)
             print("final q:", q)
             # print("expansion: ", queryExpansion(q))
             # execute query
             queryResult = cosineScore(q)
 
 
+
         # print(queryResult)
-        # if queryResult != None:
-        #     print(len(queryResult))
+        if queryResult != None:
+            print("number of result: ", len(queryResult))
+
+            # # evaluate score
+            # # q1
+            # required = [6807771, 4001247, 3992148]
+
+            # # q2
+            # required = [2211154, 2748529]
+
+            # # q3
+            # required = [4273155, 3243674, 2702938]
+
+            # requiredDic = {}
+
+            # for i in range(len(queryResult)):
+            #     if queryResult[i] in required:
+            #         requiredDic[queryResult[i]] = i
+
+            # print(requiredDic)
+
         if queryResult == None:
             t.write('\n')
         else:
