@@ -191,7 +191,8 @@ def cosineScore(q, booleanQuery):
     if booleanQuery == True:
         nonzeroScoresList = [(x[0], x[1]) for x in scores if x[1] != None]
     else:
-        nonzeroScoresList = [(x[0], x[1]) for x in scores if x[1] != None and x[2] > (ORIGINAL_NO-1)]
+        nonzeroScoresList = [(x[0], x[1]) for x in scores if x[1] != None and x[2] >= math.ceil(ORIGINAL_NO/4)]
+        print("Threshold:", math.ceil(ORIGINAL_NO/4))
     nonzeroScoresList.sort(key=lambda x: x[1], reverse=True)
     result = nonzeroScoresList
 
@@ -495,30 +496,30 @@ with open(file_of_output, "w", encoding="utf-8") as t:
 
 
 
-        # # print(queryResult)
-        # if queryResult != None:
-        #     print("number of result: ", len(queryResult))
+        # print(queryResult)
+        if queryResult != None:
+            print("number of result: ", len(queryResult))
 
-        #     query_no = int(file_of_output.split('.')[1])
+            query_no = int(file_of_output.split('.')[1])
 
-        #     # evaluate score
-        #     required = []
-        #     # q1
-        #     required.append([6807771, 4001247, 3992148])
+            # evaluate score
+            required = []
+            # q1
+            required.append([6807771, 4001247, 3992148])
 
-        #     # q2
-        #     required.append([2211154, 2748529])
+            # q2
+            required.append([2211154, 2748529])
 
-        #     # q3
-        #     required.append([4273155, 3243674, 2702938])
+            # q3
+            required.append([4273155, 3243674, 2702938])
 
-        #     requiredDic = {}
+            requiredDic = {}
 
-        #     for i in range(len(queryResult)):
-        #         if queryResult[i] in required[query_no-1]:
-        #             requiredDic[queryResult[i]] = i
+            for i in range(len(queryResult)):
+                if queryResult[i] in required[query_no-1]:
+                    requiredDic[queryResult[i]] = i
 
-        #     print(requiredDic)
+            print(requiredDic)
 
         if queryResult == None:
             t.write('\n')
