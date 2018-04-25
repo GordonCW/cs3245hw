@@ -48,11 +48,11 @@ def queryExpansion(query):
 def expandOneWord(qWord):
     result = []
     # partOfSpeech = ['a', 'n', 'v']
-    partOfSpeech = ['n', 'v']
+    partOfSpeech = ['n']
 
     # remove adj
     if wn.morphy(qWord, 'a') != None:
-        return []
+        return [qWord]
                     
 
     for pos in partOfSpeech:
@@ -74,4 +74,38 @@ def expandOneWord(qWord):
     # print(result, '\n')
     # add the origin query word
     result.append(qWord)
+    # print("used query expansion")
+    return result
+
+
+def expandOneWordForBooleanQuery(qWord):
+    result = []
+    # partOfSpeech = ['a', 'n', 'v']
+    partOfSpeech = ['n']
+
+    # don't expand adj and verb
+    if wn.morphy(qWord, 'a') != None:
+        return [qWord]
+    if wn.morphy(qWord, 'v') != None:
+        return [qWord]
+                    
+
+    for pos in partOfSpeech:
+        antonyms = []
+
+        # find syn with pos
+        synL = wn.synsets(qWord, pos)
+        if len(synL) > 1:
+            synL = synL[:1]
+        for syn in synL:
+            for word in syn.lemmas():
+                if '_' not in word.name():
+                    result.append(word.name().lower())
+
+
+    result.append(qWord)
+    # remove dulplicates
+    result = set(result)
+    result = list(result)
+    
     return result

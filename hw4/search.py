@@ -93,13 +93,25 @@ def multiplyIDF(tempQueryDic):
     return tempQueryDic
 
 
-def cosineScore(q):
+def cosineScore(q, booleanQuery):
     """
     q is a list of string where each string is a unigram"""
+    if len(q) == 0:
+        return None
 
     # compute weighted tf_t,q
-    queryDic = calculateQueryLogTF(q)
-    queryDic = multiplyIDF(queryDic)
+    queryDic = None
+    if booleanQuery == True:
+        queries = []
+        for queryList in q:
+            for query in queryList:
+                queries.append(query)
+
+        queryDic = calculateQueryLogTF(queries)
+        queryDic = multiplyIDF(queryDic)
+    else:
+        queryDic = calculateQueryLogTF(q)
+        queryDic = multiplyIDF(queryDic)
 
     # nothing to query
     if queryDic == None:
@@ -108,12 +120,54 @@ def cosineScore(q):
     # init scores for every doc
     scores = [[i, None] for i in range(len(docIds))]
 
+    # for limiting the space of searching for boolean query
+    postingListForBoolean = None
+    if booleanQuery == True:
+
+        # assume there is at least one query word
+        if len(q[0]) == 1:
+            postingListForBoolean = \
+            [ tu[0] for tu in getPostingList(postings_file, dic[q[0][0]]) ]
+        else:
+            postingList1 = \
+            [ tu[0] for tu in getPostingList(postings_file, dic[q[0][0]]) ]
+            postingList2 = \
+            [ tu[0] for tu in getPostingList(postings_file, dic[q[0][1]]) ]
+
+            postingListForBoolean = OR(postingList1, postingList2)
+            for wordQ in q[0][2:]:
+                tempPosting = \
+                [ tu[0] for tu in getPostingList(postings_file, dic[wordQ]) ]
+                postingListForBoolean = OR(postingListForBoolean, tempPosting)
+
+        for wordList in q[1:]:
+            if len(wordList) == 1:
+                scope = \
+                [ tu[0] for tu in getPostingList(postings_file, dic[wordList[0]]) ]
+            else:
+                postingList1 = \
+                [ tu[0] for tu in getPostingList(postings_file, dic[wordList[0]]) ]
+                postingList2 = \
+                [ tu[0] for tu in getPostingList(postings_file, dic[wordList[1]]) ]
+
+                scope = OR(postingList1, postingList2)
+                for wordQ in wordList[2:]:
+                    tempPosting = \
+                    [ tu[0] for tu in getPostingList(postings_file, dic[wordQ]) ]
+                    scope = OR(scope, tempPosting)
+
+            postingListForBoolean = AND(postingListForBoolean, scope)
+
+    print(len(postingListForBoolean))
+
     # compute dot product
     for term in queryDic:
         # load posting list
         # term must be in dic
         # otherwise it is removed in calculateQueryLogTF function
         pl = getPostingList(postings_file, dic[term])
+        if booleanQuery == True:
+            pl = ANDWithTfInFirstList(pl, postingListForBoolean)
         
         for tempDocId, w_tf in pl:
             # retrieve the corresponding index in scores array
@@ -175,6 +229,72 @@ def AND(postingList1, postingList2):
     return result
 
 
+def ANDWithTfInFirstList(postingList1, postingList2):
+    # print(postingList1)
+    # print(postingList2)
+    if len(postingList1) == 0 or len(postingList2) == 0:
+        return []
+    result = []
+
+    i1 = 0
+    i2 = 0
+    p1Length = len(postingList1)
+    p2Length = len(postingList2)
+    while i1 < p1Length and i2 < p2Length:
+        p1DocId = postingList1[i1][0]
+        p2DocId = postingList2[i2]
+        if p1DocId == p2DocId:
+            result.append(postingList1[i1])
+            i1 += 1
+            i2 += 1
+
+        elif p1DocId < p2DocId:
+            # later can implement skip pointer for p1
+            i1 += 1
+
+        else:
+            # later can implement skip pointer for p2
+            i2 += 1
+
+    return result
+
+
+def OR(postingList1, postingList2):
+    # print(postingList1)
+    # print(postingList2)
+    if len(postingList1) == 0:
+        return postingList2
+    elif len(postingList2) == 0:
+        return postingList1
+    result = []
+
+    i1 = 0
+    i2 = 0
+    p1Length = len(postingList1)
+    p2Length = len(postingList2)
+    while i1 < p1Length and i2 < p2Length:
+        p1DocId = postingList1[i1]
+        p2DocId = postingList2[i2]
+        if p1DocId == p2DocId:
+            result.append(p1DocId)
+            i1 += 1
+            i2 += 1
+
+        elif p1DocId < p2DocId:
+            result.append(p1DocId)
+            i1 += 1
+
+        else:
+            result.append(p2DocId)
+            i2 += 1
+
+    if i1 < p1Length:
+        result += [ tu for tu in postingList1[i1:] ]
+    elif i2 < p2Length:
+        result += [ tu for tu in postingList2[i2:] ]
+    return result
+
+
 def booleanQuery(query):
     if len(query) == 0:
         return None
@@ -205,7 +325,6 @@ def booleanQuery(query):
 
 # code start here
 
-
 dic = None
 lengthOfDocument = None
 
@@ -232,125 +351,102 @@ with open(file_of_output, "w", encoding="utf-8") as t:
         print("data is: ", data)
 
         # check if boolean query
-        if '"' in data or 'AND' in data:
+        if '"' in data:
+            print("boolean query")
 
             # for storing preprocessed queries.
             # each element is either a phrase (words separated by a space) or word
             queries = []
             preprocessResult = []
-            if 'AND' in data:
-                qList = data.split('AND')
 
-                # query expansion
-                expansion = []
-                for q in qList:  # q is "a phrase" or keyword
-                    q = nltk.word_tokenize(q)
 
-                    # expansion += q
-                    for word in q:
-                        # expansion += expandOneWord(word)
-                        expansion.append(word)
 
-                qList = expansion
+            qList = data.replace('AND', ' ')
 
-                q = [words.translate(table) for words in qList]
-                tempQ = []
-                for words in q:
-                    for word in words.split(' '):
-                        if len(word) > 0:
-                            tempQ.append(word)
-                q = [caseFoldigAndStemming(token) for token in tempQ]
-                
-                # remove strange puntuation
-                terms = []
-                for word in q:
-                    if '–' in word or word == '–' or word in stopwords:
+            # query expansion
+            expansion = []
+
+            qList = nltk.word_tokenize(qList)
+            print(qList)
+
+            # expansion += q
+            for word in qList:
+                expansion.append( expandOneWordForBooleanQuery(word) )
+                # expansion.append(word)
+
+            qList = expansion
+
+            print(qList)
+
+            # remove puntuation
+            for i in range(len(qList)):
+                qList[i] = [words.translate(table).strip() for words in qList[i]]
+
+            # split two words into one
+            for i in range(len(qList)):
+                tempList = []
+                for words in qList[i]:
+                    for word in words.split():
+                        tempList.append(word)
+                qList[i] = tempList
+
+            print(qList)
+            tempList = []
+            for lis in qList:
+                if len(lis) == 0:
+                    continue
+                tempList.append(lis)
+
+            qList = tempList
+            print("removed empty list", qList)
+
+            tempList = []
+            for lis in qList:
+                lis = [caseFoldigAndStemming(token) for token in lis]
+                tempList.append(lis)
+
+            qList = tempList
+
+            print(qList)
+            
+            # remove strange puntuation
+            for i in range(len(qList)):
+                tempList = []
+                for word in qList[i]:
+                    if '–' in word or word == '–':
                         continue
                     else:
-                        terms.append(word)
-                queries = terms
+                        tempList.append(word)
+                qList[i] = tempList
 
+            print("should be the same as before")
+            print(qList)
 
-                # # preprocessing
-                # for q in qList:     
-                #     q = nltk.word_tokenize(q)
-                #     q = [words.translate(table) for words in q]
-                #     tempQ = []
-                #     for words in q:
-                #         for word in words.split(' '):
-                #             if len(word) > 0:
-                #                 tempQ.append(word)
-                #     q = [caseFoldigAndStemming(token) for token in tempQ]
-                    
-                #     # remove strange puntuation
-                #     terms = []
-                #     for word in q:
-                #         if '–' in word or word == '–' or word in stopwords:
-                #             continue
-                #         else:
-                #             terms.append(word)
-                #     preprocessResult.append(terms)
-                # print(preprocessResult)
-
-                # # join back the processed term for phrase query
-                # for q in preprocessResult:
-                #     if len(q) <= 3:
-                #         queries.append(' '.join(q))
-                #     else:
-                #         for i in range(len(q) - 2):
-                #             queries.append(' '.join(q[i:i + 3]))
-
-                # for q in preprocessResult:
-                #     for word in q:
-                #         queries.append(word)
-            else:
-                q = data
-                q = nltk.word_tokenize(q) # now q is a list
-
-                # query expansion
-                expansion = []
-                for word in q:
-                    # expansion += expandOneWord(word)
-                    expansion.append(word)
-                # print("expansion query words: ", expansion)
-                q = expansion
-
-                q = [words.translate(table) for words in q]
-                tempQ = []
-                for words in q:
-                    for word in words.split(' '):
-                        if len(word) > 0:
-                            tempQ.append(word)
-                q = [caseFoldigAndStemming(token) for token in tempQ]
-                
-                # remove strange puntuation
-                terms = []
-                for word in q:
-                    if '–' in word or word == '–' or word in stopwords:
+            # remove query that are not in dic
+            for i in range(len(qList)):
+                tempList = []
+                for word in qList[i]:
+                    if word not in dic:
                         continue
                     else:
-                        terms.append(word)
-                queries = terms
-                # q = terms
+                        tempList.append(word)
+                qList[i] = tempList
 
-                # # join back the processed term for phrase query
-                # if len(q) <= 3:
-                #     queries.append(' '.join(q))
-                # else:
-                #     for i in range(len(q) - 2):
-                #         queries.append(' '.join(q[i:i + 3]))
+            queries = qList
 
-            # remove duplicates
-            queries = set(queries)
-            queries = list(queries)
+
+
+            # # remove duplicates
+            # queries = set(queries)
+            # queries = list(queries)
             # execute query
             print("final q:", queries)
             # queryResult = booleanQuery(queries)
-            queryResult = cosineScore(queries)
+            queryResult = cosineScore(queries, True)
 
         # if free text query
         else:
-
+            print("free text query")
             # preprocessing
             q = nltk.word_tokenize(data) # now q is a list
 
@@ -386,7 +482,7 @@ with open(file_of_output, "w", encoding="utf-8") as t:
             print("final q:", q)
             # print("expansion: ", queryExpansion(q))
             # execute query
-            queryResult = cosineScore(q)
+            queryResult = cosineScore(q, False)
 
 
 
@@ -394,23 +490,26 @@ with open(file_of_output, "w", encoding="utf-8") as t:
         if queryResult != None:
             print("number of result: ", len(queryResult))
 
+            query_no = int(file_of_output.split('.')[1])
+
             # evaluate score
-            # # q1
-            # required = [6807771, 4001247, 3992148]
+            required = []
+            # q1
+            required.append([6807771, 4001247, 3992148])
 
-            # # q2
-            # required = [2211154, 2748529]
+            # q2
+            required.append([2211154, 2748529])
 
-            # # q3
-            # required = [4273155, 3243674, 2702938]
+            # q3
+            required.append([4273155, 3243674, 2702938])
 
-            # requiredDic = {}
+            requiredDic = {}
 
-            # for i in range(len(queryResult)):
-            #     if queryResult[i] in required:
-            #         requiredDic[queryResult[i]] = i
+            for i in range(len(queryResult)):
+                if queryResult[i] in required[query_no-1]:
+                    requiredDic[queryResult[i]] = i
 
-            # print(requiredDic)
+            print(requiredDic)
 
         if queryResult == None:
             t.write('\n')
