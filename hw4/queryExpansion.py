@@ -84,10 +84,10 @@ def expandOneWordForBooleanQuery(qWord):
     partOfSpeech = ['n']
 
     # don't expand adj and verb
-    if wn.morphy(qWord, 'a') != None:
-        return [qWord]
-    if wn.morphy(qWord, 'v') != None:
-        return [qWord]
+    # if wn.morphy(qWord, 'a') != None:
+    #     return [qWord]
+    # if wn.morphy(qWord, 'v') != None:
+    #     return [qWord]
                     
 
     for pos in partOfSpeech:

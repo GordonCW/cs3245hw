@@ -158,7 +158,8 @@ def cosineScore(q, booleanQuery):
 
             postingListForBoolean = AND(postingListForBoolean, scope)
 
-    print(len(postingListForBoolean))
+    if postingListForBoolean != None:
+        print(len(postingListForBoolean))
 
     # compute dot product
     for term in queryDic:
@@ -367,7 +368,7 @@ with open(file_of_output, "w", encoding="utf-8") as t:
             expansion = []
 
             qList = nltk.word_tokenize(qList)
-            print(qList)
+            # print(qList)
 
             # expansion += q
             for word in qList:
@@ -376,7 +377,7 @@ with open(file_of_output, "w", encoding="utf-8") as t:
 
             qList = expansion
 
-            print(qList)
+            # print(qList)
 
             # remove puntuation
             for i in range(len(qList)):
@@ -390,7 +391,7 @@ with open(file_of_output, "w", encoding="utf-8") as t:
                         tempList.append(word)
                 qList[i] = tempList
 
-            print(qList)
+            # print(qList)
             tempList = []
             for lis in qList:
                 if len(lis) == 0:
@@ -398,7 +399,7 @@ with open(file_of_output, "w", encoding="utf-8") as t:
                 tempList.append(lis)
 
             qList = tempList
-            print("removed empty list", qList)
+            # print("removed empty list", qList)
 
             tempList = []
             for lis in qList:
@@ -407,7 +408,7 @@ with open(file_of_output, "w", encoding="utf-8") as t:
 
             qList = tempList
 
-            print(qList)
+            # print(qList)
             
             # remove strange puntuation
             for i in range(len(qList)):
@@ -419,8 +420,8 @@ with open(file_of_output, "w", encoding="utf-8") as t:
                         tempList.append(word)
                 qList[i] = tempList
 
-            print("should be the same as before")
-            print(qList)
+            # print("should be the same as before")
+            # print(qList)
 
             # remove query that are not in dic
             for i in range(len(qList)):
