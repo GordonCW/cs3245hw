@@ -55,22 +55,22 @@ def expandOneWord(qWord):
         return [qWord]
                     
 
-    for pos in partOfSpeech:
-        # find syn with pos
-        synL = wn.synsets(qWord, pos)
-        if len(synL) > 1:
-            synL = synL[:1]
-        counter = 0
-        for syn in synL:
-            for word in syn.lemmas():
-                if '_' not in word.name():
-                    wordName = word.name().lower()
-                    if wn.morphy(qWord, pos) == wordName:
-                        continue
-                    result.append(wordName)
-                    counter += 1
-                    if counter == 1:
-                        break
+    # for pos in partOfSpeech:
+    #     # find syn with pos
+    #     synL = wn.synsets(qWord, pos)
+    #     if len(synL) > 1:
+    #         synL = synL[:1]
+    #     counter = 0
+    #     for syn in synL:
+    #         for word in syn.lemmas():
+    #             if '_' not in word.name():
+    #                 wordName = word.name().lower()
+    #                 if wn.morphy(qWord, pos) == wordName:
+    #                     continue
+    #                 result.append(wordName)
+    #                 counter += 1
+    #                 if counter == 1:
+    #                     break
 
     # remove dulplicates
     result = set(result)

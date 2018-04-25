@@ -191,8 +191,8 @@ def cosineScore(q, booleanQuery):
     if booleanQuery == True:
         nonzeroScoresList = [(x[0], x[1]) for x in scores if x[1] != None]
     else:
-        nonzeroScoresList = [(x[0], x[1]) for x in scores if x[1] != None and x[2] >= math.ceil(ORIGINAL_NO/4)]
-        print("Threshold:", math.ceil(ORIGINAL_NO/4))
+        nonzeroScoresList = [(x[0], x[1]) for x in scores if x[1] != None and x[2] >= math.ceil(ORIGINAL_NO-1)]
+        print("Threshold:", math.ceil(ORIGINAL_NO-1))
     nonzeroScoresList.sort(key=lambda x: x[1], reverse=True)
     result = nonzeroScoresList
 
@@ -361,95 +361,145 @@ with open(file_of_output, "w", encoding="utf-8") as t:
         if '"' in data:
             print("boolean query")
 
-            # for storing preprocessed queries.
-            # each element is either a phrase (words separated by a space) or word
-            queries = []
-            preprocessResult = []
+            # try free text method
+            ###############################################################################
+            data = data.replace("AND", ' ')
+            data = data.replace('"', ' ')
+            # preprocessing
+            q = nltk.word_tokenize(data) # now q is a list
 
+            print(q)
 
-
-            qList = data.replace('AND', ' ')
+            ORIGINAL_NO = len(q)
+            print("originally have: ", ORIGINAL_NO)
 
             # query expansion
             expansion = []
-
-            qList = nltk.word_tokenize(qList)
-            # print(qList)
-
-            # expansion += q
-            for word in qList:
-                expansion.append( expandOneWordForBooleanQuery(word) )
+            for word in q:
+                expansion += expandOneWord(word)
                 # expansion.append(word)
+            # print("expansion query words: ", expansion)
+            q = expansion
 
-            qList = expansion
-
-            # print(qList)
-
-            # remove puntuation
-            for i in range(len(qList)):
-                qList[i] = [words.translate(table).strip() for words in qList[i]]
-
-            # split two words into one
-            for i in range(len(qList)):
-                tempList = []
-                for words in qList[i]:
-                    for word in words.split():
-                        tempList.append(word)
-                qList[i] = tempList
-
-            # print(qList)
-            tempList = []
-            for lis in qList:
-                if len(lis) == 0:
-                    continue
-                tempList.append(lis)
-
-            qList = tempList
-            # print("removed empty list", qList)
-
-            tempList = []
-            for lis in qList:
-                lis = [caseFoldigAndStemming(token) for token in lis]
-                tempList.append(lis)
-
-            qList = tempList
-
-            # print(qList)
+            q = [words.translate(table) for words in q]
+            tempQ = []
+            for words in q:
+                for word in words.split(' '):
+                    if len(word) > 0:
+                        tempQ.append(word)
+            q = [caseFoldigAndStemming(token) for token in tempQ]
             
             # remove strange puntuation
-            for i in range(len(qList)):
-                tempList = []
-                for word in qList[i]:
-                    if '–' in word or word == '–':
-                        continue
-                    else:
-                        tempList.append(word)
-                qList[i] = tempList
-
-            # print("should be the same as before")
-            # print(qList)
-
-            # remove query that are not in dic
-            for i in range(len(qList)):
-                tempList = []
-                for word in qList[i]:
-                    if word not in dic:
-                        continue
-                    else:
-                        tempList.append(word)
-                qList[i] = tempList
-
-            queries = qList
+            terms = []
+            for word in q:
+                if '–' in word or word == '–' or word in stopwords:
+                    continue
+                else:
+                    terms.append(word)
+            q = terms
 
 
-
-            # # remove duplicates
-            # queries = set(queries)
-            # queries = list(queries)
+            # remove duplicates
+            q = set(q)
+            q = list(q)
+            print("final q:", q)
+            # print("expansion: ", queryExpansion(q))
             # execute query
-            print("final q:", queries)
-            # queryResult = booleanQuery(queries)
-            queryResult = cosineScore(queries, True)
+            queryResult = cosineScore(q, False)
+            ###############################################################################
+
+
+
+
+            # # for storing preprocessed queries.
+            # # each element is either a phrase (words separated by a space) or word
+            # queries = []
+            # preprocessResult = []
+
+
+
+            # qList = data.replace('AND', ' ')
+
+            # # query expansion
+            # expansion = []
+
+            # qList = nltk.word_tokenize(qList)
+            # # print(qList)
+
+            # # expansion += q
+            # for word in qList:
+            #     expansion.append( expandOneWordForBooleanQuery(word) )
+            #     # expansion.append(word)
+
+            # qList = expansion
+
+            # # print(qList)
+
+            # # remove puntuation
+            # for i in range(len(qList)):
+            #     qList[i] = [words.translate(table).strip() for words in qList[i]]
+
+            # # split two words into one
+            # for i in range(len(qList)):
+            #     tempList = []
+            #     for words in qList[i]:
+            #         for word in words.split():
+            #             tempList.append(word)
+            #     qList[i] = tempList
+
+            # # print(qList)
+            # tempList = []
+            # for lis in qList:
+            #     if len(lis) == 0:
+            #         continue
+            #     tempList.append(lis)
+
+            # qList = tempList
+            # # print("removed empty list", qList)
+
+            # tempList = []
+            # for lis in qList:
+            #     lis = [caseFoldigAndStemming(token) for token in lis]
+            #     tempList.append(lis)
+
+            # qList = tempList
+
+            # # print(qList)
+            
+            # # remove strange puntuation
+            # for i in range(len(qList)):
+            #     tempList = []
+            #     for word in qList[i]:
+            #         if '–' in word or word == '–':
+            #             continue
+            #         else:
+            #             tempList.append(word)
+            #     qList[i] = tempList
+
+            # # print("should be the same as before")
+            # # print(qList)
+
+            # # remove query that are not in dic
+            # for i in range(len(qList)):
+            #     tempList = []
+            #     for word in qList[i]:
+            #         if word not in dic:
+            #             continue
+            #         else:
+            #             tempList.append(word)
+            #     qList[i] = tempList
+
+            # queries = qList
+
+
+
+            # # # remove duplicates
+            # # queries = set(queries)
+            # # queries = list(queries)
+            # # execute query
+            # print("final q:", queries)
+            # # queryResult = booleanQuery(queries)
+            # queryResult = cosineScore(queries, True)
 
         # if free text query
         else:
@@ -494,9 +544,6 @@ with open(file_of_output, "w", encoding="utf-8") as t:
             # execute query
             queryResult = cosineScore(q, False)
 
-
-
-        # print(queryResult)
         if queryResult != None:
             print("number of result: ", len(queryResult))
 
