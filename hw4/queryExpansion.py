@@ -48,7 +48,7 @@ def queryExpansion(query):
 def expandOneWord(qWord):
     result = []
     # partOfSpeech = ['a', 'n', 'v']
-    partOfSpeech = ['n', 'v']
+    partOfSpeech = ['n']
 
     # remove adj
     if wn.morphy(qWord, 'a') != None:
