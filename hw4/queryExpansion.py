@@ -48,7 +48,7 @@ def queryExpansion(query):
 def expandOneWord(qWord):
     result = []
     # partOfSpeech = ['a', 'n', 'v']
-    partOfSpeech = ['n']
+    partOfSpeech = ['n', 'v']
 
     # remove adj
     if wn.morphy(qWord, 'a') != None:
@@ -56,16 +56,21 @@ def expandOneWord(qWord):
                     
 
     for pos in partOfSpeech:
-        antonyms = []
-
         # find syn with pos
         synL = wn.synsets(qWord, pos)
         if len(synL) > 1:
             synL = synL[:1]
+        counter = 0
         for syn in synL:
             for word in syn.lemmas():
                 if '_' not in word.name():
-                    result.append(word.name().lower())
+                    wordName = word.name().lower()
+                    if wn.morphy(qWord, pos) == wordName:
+                        continue
+                    result.append(wordName)
+                    counter += 1
+                    if counter == 1:
+                        break
 
     # remove dulplicates
     result = set(result)
@@ -91,21 +96,25 @@ def expandOneWordForBooleanQuery(qWord):
                     
 
     for pos in partOfSpeech:
-        antonyms = []
-
         # find syn with pos
         synL = wn.synsets(qWord, pos)
         if len(synL) > 1:
             synL = synL[:1]
+        counter = 0
         for syn in synL:
             for word in syn.lemmas():
                 if '_' not in word.name():
-                    result.append(word.name().lower())
-
+                    wordName = word.name().lower()
+                    if wn.morphy(qWord, pos) == wordName:
+                        continue
+                    result.append(wordName)
+                    counter += 1
+                    if counter == 2:
+                        break
 
     result.append(qWord)
     # remove dulplicates
     result = set(result)
     result = list(result)
-    
+
     return result
